@@ -10,9 +10,10 @@ appendSortLines()
     local commandWindowPairs=`echo -e "$1" | sort`
     local desktop=$2
     local sortCommands=""
+    local command
     for pair in $commandWindowPairs
     do
-	local command="`echo $pair | cut -d ":" -f 1`"
+	command="`echo $pair | cut -d ":" -f 1`"
 	if [ -z $sortCommands ] 
 	then
 	    sortCommands="$command"
@@ -32,39 +33,42 @@ getWindows()
     local sortLines=""
     local lastDesktop
     local commandWindowPairs
+    local window
+    local desktop
+    local pid
+    local command
     for line in `wmctrl -lp`
     do 
-	local window=`echo $line | cut -d " " -f 1`
-	local desktop=`echo $line | cut -d " " -f 3`
-	local pid=`echo $line | cut -d " " -f 4`
-    #local title=`echo $line | cut -d " " -f 1,2,3,4,5,6 --complement` 
-	local command=`getCommand $pid`
-	if [ "$desktop" != "${lastDesktop}" ]; then
-	    if [ -n "${lastDesktop}" ]; then
-#	    bringLines="$bringLines`echo -e "\n$p bring $window $command"`"
+	window=`echo $line | cut -d " " -f 1`
+	desktop=`echo $line | cut -d " " -f 3`
+        pid=`echo $line | cut -d " " -f 4`
+        # title=`echo $line | cut -d " " -f 1,2,3,4,5,6 --complement` 
+	command=`getCommand $pid`
+	if [ "$desktop" != "${lastDesktop}" ]
+	then
+	    if [ -n "$lastDesktop" ]
+	    then
 		appendSortLines "$commandWindowPairs" "$lastDesktop"
-#	else
-#	    bringLines="$bringLines`echo -e "$p bring $window $command"`"
  	    fi
 	    commandWindowPairs="$command:$window"
 	    lastDesktop=$desktop
 	else
-#	bringLines="$bringLines`echo -e "\n$p bring $window $command"`"
-	    commandWindowPairs="${commandWindowPairs}\n$command:$window"
+	    commandWindowPairs="$commandWindowPairs\n$command:$window"
 	fi
     done
     appendSortLines "$commandWindowPairs" "$lastDesktop"
     sortLines=`echo "$sortLines" | sort`
-    # bringLines=""
-    counter=1
-    desktop=`wmctrl -d | grep \* | cut -d " " -f 1`
+    local counter=1
+    local visibleDesktop=`wmctrl -d | grep \* | cut -d " " -f 1`
     local gotoLines=""
+    local commands
+    local lastCommands
     for line in $sortLines 
     do 
-	local command=`echo $line | cut -d ":" -f 2`
-	local window=`echo $line | cut -d ":" -f 3`
-	local d=`echo $line | cut -d ":" -f 4`
-	local commands=`echo $line | cut -d ":" -f 1`
+	command=`echo $line | cut -d ":" -f 2`
+	window=`echo $line | cut -d ":" -f 3`
+	desktop=`echo $line | cut -d ":" -f 4`
+	commands=`echo $line | cut -d ":" -f 1`
 	if [ "$commands" != "$lastCommands" ]
 	then
 	    if [ -n "$gotoLines" ]
@@ -72,7 +76,8 @@ getWindows()
 		gotoLines="$gotoLines\n"
 	    fi
 	    gotoLines="$gotoLines$counter goto $window "
- 	    if [ "$d" = "$desktop" ]; then
+ 	    if [ "$desktop" = "$visibleDesktop" ] 
+	    then
 		gotoLines="$gotoLines*"
 	    fi
 	    gotoLines="$gotoLines$commands"
@@ -86,27 +91,27 @@ getWindows()
 #echo "-------------------------------------------------------------------------------------------------------------------------------------------------------------------------"
 }
 
-xxx()
-{
-    local desktop=`wmctrl -d | grep \* | cut -d " " -f 1`
-    local line=`(getWindows;dmenu_path) | dmenu -i -l 13` 
-    
-    echo $line | grep "goto"
-    
-    if [ "$?" -eq "0" ]; then
-	local window=`echo $line | cut -d " " -f 3`
-	echo $window
-	wmctrl -ia $window
-    else
-	echo $line | grep "bring"
+main()
+    {
+	local desktop=`wmctrl -d | grep \* | cut -d " " -f 1`
+	local line=`(getWindows;dmenu_path) | dmenu -i -l 13` 
+	
+	echo $line | grep "goto"
 	
 	if [ "$?" -eq "0" ]; then
 	    local window=`echo $line | cut -d " " -f 3`
-	    wmctrl -iR $window
+	    echo $window
+	    wmctrl -ia $window
 	else
-	    exec $line
+	    echo $line | grep "bring"
+	    
+	    if [ "$?" -eq "0" ]; then
+		local window=`echo $line | cut -d " " -f 3`
+		wmctrl -iR $window
+	    else
+		exec $line
+	    fi
 	fi
-    fi
-}
+    }
 
-xxx
+main
