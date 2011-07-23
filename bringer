@@ -7,16 +7,16 @@ getCommand()
 
 appendSortLines()
 {
-    declare commandWindowPairs=`echo -e $1 | sort`
+    declare commandWindowPairs=`echo -e "$1" | sort`
     declare -i desktop=$2
     declare sortCommands
     declare command
     for pair in $commandWindowPairs
     do
-	command=`echo $pair | cut -d : -f 1`
+	command=`echo "$pair" | cut -d : -f 1`
 	if [ ! $sortCommands ] 
 	then
-	    sortCommands="$command"
+	    sortCommands=$command
 	else
 	    sortCommands="$sortCommands --- $command"
 	fi
@@ -39,10 +39,10 @@ getWindows()
     declare command
     for line in `wmctrl -lp`
     do 
-	window=`echo $line | cut -d " " -f 1`
-	desktop=`echo $line | cut -d " " -f 3`
-        pid=`echo $line | cut -d " " -f 4`
-        # title=`echo $line | cut -d " " -f 1,2,3,4,5,6 --complement` 
+	window=`echo "$line" | cut -d " " -f 1`
+	desktop=`echo "$line" | cut -d " " -f 3`
+        pid=`echo "$line" | cut -d " " -f 4`
+        # title=`echo "$line" | cut -d " " -f 1,2,3,4,5,6 --complement` 
 	command=`getCommand $pid`
 	if [ $desktop -ne $lastDesktop ]
 	then
@@ -50,7 +50,7 @@ getWindows()
 	    then
 		appendSortLines "$commandWindowPairs" "$lastDesktop"
  	    fi
-	    commandWindowPairs="$command:$window"
+	    commandWindowPairs=$command:$window
 	    lastDesktop=$desktop
 	else
 	    commandWindowPairs="$commandWindowPairs\n$command:$window"
@@ -65,10 +65,10 @@ getWindows()
     declare lastCommands
     for line in $sortLines 
     do 
-	command=`echo $line | cut -d ":" -f 2`
-	window=`echo $line | cut -d ":" -f 3`
-	desktop=`echo $line | cut -d ":" -f 4`
-	commands=`echo $line | cut -d ":" -f 1`
+	command=`echo "$line" | cut -d : -f 2`
+	window=`echo "$line" | cut -d : -f 3`
+	desktop=`echo "$line" | cut -d : -f 4`
+	commands=`echo "$line" | cut -d : -f 1`
 	if [ "$commands" != "$lastCommands" ]
 	then
 	    if [ -n "$gotoLines" ]
@@ -82,7 +82,7 @@ getWindows()
 	    fi
 	    gotoLines="$gotoLines$commands"
 	fi
-	lastCommands="$commands"
+	lastCommands=$commands
 	let counter=$counter+1    
     done
     echo -e "$gotoLines"
@@ -96,16 +96,16 @@ main()
 	declare line=`(getWindows;dmenu_path) | dmenu -i -l 13` 
 	declare -i window
 	
-	if echo $line | grep "goto"
+	if echo "$line" | grep goto
 	then
-	    window=`echo $line | cut -d " " -f 3`
+	    window=`echo "$line" | cut -d " " -f 3`
 	    wmctrl -ia $window
 	else
-	    echo $line | grep "bring"
+	    echo "$line" | grep bring
 	    
-	    if echo $line | grep "bring" 
+	    if echo "$line" | grep bring 
 	    then
-		window=`echo $line | cut -d " " -f 3`
+		window=`echo "$line" | cut -d " " -f 3`
 		wmctrl -iR $window
 	    else
 		exec $line
