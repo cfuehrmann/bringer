@@ -45,7 +45,7 @@ getWindows()
 	    fi
 	    if [ -n "${loopDesktop}" ]; then
 #	    bringLines="$bringLines`echo -e "\n$p bring $window $command"`"
-		appendSortLines $commandWindowPairs
+		appendSortLines "$commandWindowPairs"
 #	else
 #	    bringLines="$bringLines`echo -e "$p bring $window $command"`"
  	    fi
@@ -58,7 +58,7 @@ getWindows()
 	dd=$d
 	loopDesktop=$d
     done
-    appendSortLines $commandWindowPairs
+    appendSortLines "$commandWindowPairs"
     sortLines=`echo "$sortLines" | sort`
     bringLines=""
     counter=1
