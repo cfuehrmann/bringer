@@ -2,10 +2,10 @@
 
 getCommand()
 {
-    ps -p $1 -o command= | sed 's/^[^ ]*\///g'
+    ps -p $1 -o command= | sed "s/^[^ ]*\///"
 }
 
-appendSortLines()
+appendSortLines() # todo: clean up treatment of "external" parameter "sortLines"
 {
     declare commandWindowPairs=`echo -e "$1" | sort`
     declare -i desktop=$2
@@ -81,9 +81,9 @@ getWindows()
 		gotoLines="$gotoLines*"
 	    fi
 	    gotoLines="$gotoLines$commands"
+	    let counter=$counter+1    
 	fi
 	lastCommands=$commands
-	let counter=$counter+1    
     done
     echo -e "$gotoLines"
 #echo "-------------------------------------------------------------------------------------------------------------------------------------------------------------------------$bringLines"
