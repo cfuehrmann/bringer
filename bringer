@@ -1,4 +1,5 @@
 #!/bin/bash
+
 getCommand()
 {
     ps -p $1 -o command= | sed 's/^[^ ]*\///g'
@@ -6,9 +7,9 @@ getCommand()
 
 appendSortLines()
 {
-    local commandWindowPairs=$1
+    local commandWindowPairs=`echo "$1" | sort`
+    local desktop=$2
     local sortCommands=""
-    commandWindowPairs=`echo "$commandWindowPairs" | sort`
     for pair in $commandWindowPairs
     do
 	local command="`echo $pair | cut -d ":" -f 1`"
@@ -21,22 +22,21 @@ appendSortLines()
     done
     for pair in $commandWindowPairs
     do
-    	sortLines="${sortLines}`echo -e "\n${sortCommands}:$pair:$dd"`"
+    	sortLines="${sortLines}`echo -e "\n${sortCommands}:$pair:$desktop"`"
     done
 }
 
 getWindows()
 {
     IFS=$'\n'
-    windows=`wmctrl -lp` # | grep -v "^0x[0-9a-f]*  $desktop"`
-    sortLines=""
-    for line in $windows
+    local sortLines=""
+    for line in `wmctrl -lp`
     do 
-	window=`echo $line | cut -d " " -f 1`
-	d=`echo $line | cut -d " " -f 3`
-	pid=`echo $line | cut -d " " -f 4`
+	local window=`echo $line | cut -d " " -f 1`
+	local d=`echo $line | cut -d " " -f 3`
+	local pid=`echo $line | cut -d " " -f 4`
     #title=`echo $line | cut -d " " -f 1,2,3,4,5,6 --complement` 
-	command=`getCommand $pid`
+	local command=`getCommand $pid`
 	if [ "$d" != "${loopDesktop}" ]; then
  	    if [ "$d" = "$desktop" ]; then
 		c="*"
@@ -45,7 +45,7 @@ getWindows()
 	    fi
 	    if [ -n "${loopDesktop}" ]; then
 #	    bringLines="$bringLines`echo -e "\n$p bring $window $command"`"
-		appendSortLines "$commandWindowPairs"
+		appendSortLines "$commandWindowPairs" "$dd"
 #	else
 #	    bringLines="$bringLines`echo -e "$p bring $window $command"`"
  	    fi
@@ -58,7 +58,7 @@ getWindows()
 	dd=$d
 	loopDesktop=$d
     done
-    appendSortLines "$commandWindowPairs"
+    appendSortLines "$commandWindowPairs" "$dd"
     sortLines=`echo "$sortLines" | sort`
     bringLines=""
     counter=1
@@ -90,7 +90,6 @@ getWindows()
 xxx()
 {
     local desktop=`wmctrl -d | grep \* | cut -d " " -f 1`
-    
     local line=`(getWindows;dmenu_path) | dmenu -i -l 13` 
     
     echo $line | grep "goto"
