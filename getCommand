@@ -1,0 +1,2 @@
+#!/bin/sh
+ps -p $1 -o command= | sed 's/^[^ ]*\///g'

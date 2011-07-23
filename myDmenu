@@ -1,0 +1,21 @@
+#!/bin/sh
+desktop=`wmctrl -d | grep \* | cut -d " " -f 1`
+
+line=`(./getWindows;dmenu_path) | dmenu -i -l 13` 
+
+echo $line | grep "goto"
+
+if [ "$?" -eq "0" ]; then
+    window=`echo $line | cut -d " " -f 3`
+    echo $window
+    wmctrl -ia $window
+else
+    echo $line | grep "bring"
+
+    if [ "$?" -eq "0" ]; then
+	window=`echo $line | cut -d " " -f 3`
+	wmctrl -iR $window
+    else
+	exec $line
+    fi
+fi

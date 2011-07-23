@@ -1,0 +1,79 @@
+#!/bin/bash
+appendSortLines()
+{
+    cc=""
+    commands=`echo "$commands" | sort`
+    for c in $commands
+    do
+	c2="`echo $c | cut -d ":" -f 1`"
+	if [ -z $cc ] 
+	then
+	    cc="$c2"
+	else
+	    cc="${cc} --- $c2"
+	fi
+    done
+    for c in $commands
+    do
+    	sortLines="${sortLines}`echo -e "\n${cc}:$c:$dd"`"
+    done
+}
+
+IFS=$'\n'
+windows=`wmctrl -lp` # | grep -v "^0x[0-9a-f]*  $desktop"`
+sortLines=""
+for line in $windows
+do 
+    window=`echo $line | cut -d " " -f 1`
+    d=`echo $line | cut -d " " -f 3`
+    pid=`echo $line | cut -d " " -f 4`
+    #title=`echo $line | cut -d " " -f 1,2,3,4,5,6 --complement` 
+    command=`./getCommand $pid`
+    if [ "$d" != "${loopDesktop}" ]; then
+ 	if [ "$d" = "$desktop" ]; then
+	    c="*"
+	else
+	    c=""
+	fi
+	if [ -n "${loopDesktop}" ]; then
+#	    bringLines="$bringLines`echo -e "\n$p bring $window $command"`"
+	    appendSortLines
+#	else
+#	    bringLines="$bringLines`echo -e "$p bring $window $command"`"
+ 	fi
+	commands="$command:$window"
+    else
+#	bringLines="$bringLines`echo -e "\n$p bring $window $command"`"
+	commands="`echo -e "${commands}\n$command:$window"`"
+    fi
+    w=$window
+    dd=$d
+    loopDesktop=$d
+done
+appendSortLines
+sortLines=`echo "$sortLines" | sort`
+bringLines=""
+counter=1
+desktop=`wmctrl -d | grep \* | cut -d " " -f 1`
+for line in $sortLines 
+do # todo: mark the active desktop
+    command=`echo $line | cut -d ":" -f 2`
+    window=`echo $line | cut -d ":" -f 3`
+    d=`echo $line | cut -d ":" -f 3`
+    commands=`echo $line | cut -d ":" -f 1`
+    if [ "$commands" != "$lastCommands" ]
+    then
+	if [ -n "$gotoLines" ]
+	then
+	    gotoLines="`echo -e "$gotoLines\n$counter goto $window $commands"`"
+	else
+	    gotoLines="$counter goto $window $commands"
+	fi
+    fi
+    lastCommands="$commands"
+    let counter=$counter+1    
+done
+echo "$gotoLines"
+#echo "-------------------------------------------------------------------------------------------------------------------------------------------------------------------------$bringLines"
+#"$bringLines" on extra line causes trouble for some reason 
+#echo "-------------------------------------------------------------------------------------------------------------------------------------------------------------------------"
