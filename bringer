@@ -65,20 +65,20 @@ getWindows()
     desktop=`wmctrl -d | grep \* | cut -d " " -f 1`
     for line in $sortLines 
     do # todo: mark the active desktop
-	command=`echo $line | cut -d ":" -f 2`
-	window=`echo $line | cut -d ":" -f 3`
-	d=`echo $line | cut -d ":" -f 3`
-	commandWindowPairs=`echo $line | cut -d ":" -f 1`
-	if [ "$commandWindowPairs" != "$lastCommands" ]
+	local command=`echo $line | cut -d ":" -f 2`
+	local window=`echo $line | cut -d ":" -f 3`
+	local d=`echo $line | cut -d ":" -f 3`
+	local commands=`echo $line | cut -d ":" -f 1`
+	if [ "$commands" != "$lastCommands" ]
 	then
 	    if [ -n "$gotoLines" ]
 	    then
-		gotoLines="`echo -e "$gotoLines\n$counter goto $window $commandWindowPairs"`"
+		gotoLines="`echo -e "$gotoLines\n$counter goto $window $commands"`"
 	    else
-		gotoLines="$counter goto $window $commandWindowPairs"
+		gotoLines="$counter goto $window $commands"
 	    fi
 	fi
-	lastCommands="$commandWindowPairs"
+	lastCommands="$commands"
 	let counter=$counter+1    
     done
     echo "$gotoLines"
