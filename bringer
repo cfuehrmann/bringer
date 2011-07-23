@@ -30,18 +30,18 @@ getWindows()
 {
     IFS=$'\n'
     local sortLines=""
-    local dd
+    local lastDesktop
     for line in `wmctrl -lp`
     do 
 	local window=`echo $line | cut -d " " -f 1`
-	local d=`echo $line | cut -d " " -f 3`
+	local desktop=`echo $line | cut -d " " -f 3`
 	local pid=`echo $line | cut -d " " -f 4`
     #title=`echo $line | cut -d " " -f 1,2,3,4,5,6 --complement` 
 	local command=`getCommand $pid`
-	if [ "$d" != "${loopDesktop}" ]; then
-	    if [ -n "${loopDesktop}" ]; then
+	if [ "$desktop" != "${lastDesktop}" ]; then
+	    if [ -n "${lastDesktop}" ]; then
 #	    bringLines="$bringLines`echo -e "\n$p bring $window $command"`"
-		appendSortLines "$commandWindowPairs" "$dd"
+		appendSortLines "$commandWindowPairs" "$lastDesktop"
 #	else
 #	    bringLines="$bringLines`echo -e "$p bring $window $command"`"
  	    fi
@@ -50,10 +50,9 @@ getWindows()
 #	bringLines="$bringLines`echo -e "\n$p bring $window $command"`"
 	commandWindowPairs="${commandWindowPairs}\n$command:$window"
 	fi
-	dd=$d
-	loopDesktop=$d
+	lastDesktop=$desktop
     done
-    appendSortLines "$commandWindowPairs" "$dd"
+    appendSortLines "$commandWindowPairs" "$lastDesktop"
     sortLines=`echo "$sortLines" | sort`
     bringLines=""
     counter=1
