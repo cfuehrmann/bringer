@@ -7,7 +7,7 @@ getCommand()
 
 appendSortLines()
 {
-    local commandWindowPairs=`echo "$1" | sort`
+    local commandWindowPairs=`echo -e "$1" | sort`
     local desktop=$2
     local sortCommands=""
     for pair in $commandWindowPairs
@@ -30,6 +30,7 @@ getWindows()
 {
     IFS=$'\n'
     local sortLines=""
+    local dd
     for line in `wmctrl -lp`
     do 
 	local window=`echo $line | cut -d " " -f 1`
@@ -47,9 +48,8 @@ getWindows()
 	    commandWindowPairs="$command:$window"
 	else
 #	bringLines="$bringLines`echo -e "\n$p bring $window $command"`"
-	commandWindowPairs="`echo -e "${commandWindowPairs}\n$command:$window"`"
+	commandWindowPairs="${commandWindowPairs}\n$command:$window"
 	fi
-	w=$window
 	dd=$d
 	loopDesktop=$d
     done
