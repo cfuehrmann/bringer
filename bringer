@@ -18,12 +18,12 @@ appendSortLines()
 	then
 	    sortCommands="$command"
 	else
-	    sortCommands="${sortCommands} --- $command"
+	    sortCommands="$sortCommands --- $command"
 	fi
     done
     for pair in $commandWindowPairs
     do
-    	sortLines="${sortLines}`echo -e "\n${sortCommands}:$pair:$desktop"`"
+    	sortLines="$sortLines\n$sortCommands:$pair:$desktop"
     done
 }
 
@@ -44,7 +44,7 @@ getWindows()
         pid=`echo $line | cut -d " " -f 4`
         # title=`echo $line | cut -d " " -f 1,2,3,4,5,6 --complement` 
 	command=`getCommand $pid`
-	if [ "$desktop" != "${lastDesktop}" ]
+	if [ "$desktop" != "$lastDesktop" ]
 	then
 	    if [ -n "$lastDesktop" ]
 	    then
@@ -57,7 +57,7 @@ getWindows()
 	fi
     done
     appendSortLines "$commandWindowPairs" "$lastDesktop"
-    sortLines=`echo "$sortLines" | sort`
+    sortLines=`echo -e "$sortLines" | sort`
     local counter=1
     local visibleDesktop=`wmctrl -d | grep \* | cut -d " " -f 1`
     local gotoLines=""
