@@ -7,10 +7,10 @@ getCommand()
 
 appendSortLines()
 {
-    local commandWindowPairs=`echo -e "$1" | sort`
-    local desktop=$2
-    local sortCommands=""
-    local command
+    declare commandWindowPairs=`echo -e "$1" | sort`
+    declare -i desktop=$2
+    declare sortCommands=""
+    declare command
     for pair in $commandWindowPairs
     do
 	command="`echo $pair | cut -d ":" -f 1`"
@@ -29,14 +29,14 @@ appendSortLines()
 
 getWindows()
 {
-    IFS=$'\n'
-    local sortLines=""
-    local lastDesktop
-    local commandWindowPairs
-    local window
-    local desktop
-    local pid
-    local command
+    IFS=$'\n' # so that the e.g. for loop below uses newline as separator
+    declare sortLines=""
+    declare -i lastDesktop
+    declare commandWindowPairs
+    declare -i window
+    declare -i desktop
+    declare -i pid
+    declare command
     for line in `wmctrl -lp`
     do 
 	window=`echo $line | cut -d " " -f 1`
@@ -58,11 +58,11 @@ getWindows()
     done
     appendSortLines "$commandWindowPairs" "$lastDesktop"
     sortLines=`echo -e "$sortLines" | sort`
-    local counter=1
-    local visibleDesktop=`wmctrl -d | grep \* | cut -d " " -f 1`
-    local gotoLines=""
-    local commands
-    local lastCommands
+    declare -i counter=1
+    declare -i visibleDesktop=`wmctrl -d | grep \* | cut -d " " -f 1`
+    declare gotoLines=""
+    declare commands
+    declare lastCommands
     for line in $sortLines 
     do 
 	command=`echo $line | cut -d ":" -f 2`
@@ -93,20 +93,19 @@ getWindows()
 
 main()
     {
-	local desktop=`wmctrl -d | grep \* | cut -d " " -f 1`
-	local line=`(getWindows;dmenu_path) | dmenu -i -l 13` 
+	declare line=`(getWindows;dmenu_path) | dmenu -i -l 13` 
+	declare -i window
 	
-	echo $line | grep "goto"
-	
-	if [ "$?" -eq "0" ]; then
-	    local window=`echo $line | cut -d " " -f 3`
-	    echo $window
+	if echo $line | grep "goto"
+	then
+	    window=`echo $line | cut -d " " -f 3`
 	    wmctrl -ia $window
 	else
 	    echo $line | grep "bring"
 	    
-	    if [ "$?" -eq "0" ]; then
-		local window=`echo $line | cut -d " " -f 3`
+	    if echo $line | grep "bring" 
+	    then
+		window=`echo $line | cut -d " " -f 3`
 		wmctrl -iR $window
 	    else
 		exec $line
