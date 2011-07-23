@@ -38,11 +38,6 @@ getWindows()
     #title=`echo $line | cut -d " " -f 1,2,3,4,5,6 --complement` 
 	local command=`getCommand $pid`
 	if [ "$d" != "${loopDesktop}" ]; then
- 	    if [ "$d" = "$desktop" ]; then
-		c="*"
-	    else
-		c=""
-	    fi
 	    if [ -n "${loopDesktop}" ]; then
 #	    bringLines="$bringLines`echo -e "\n$p bring $window $command"`"
 		appendSortLines "$commandWindowPairs" "$dd"
@@ -67,15 +62,20 @@ getWindows()
     do # todo: mark the active desktop
 	local command=`echo $line | cut -d ":" -f 2`
 	local window=`echo $line | cut -d ":" -f 3`
-	local d=`echo $line | cut -d ":" -f 3`
+	local d=`echo $line | cut -d ":" -f 4`
 	local commands=`echo $line | cut -d ":" -f 1`
 	if [ "$commands" != "$lastCommands" ]
 	then
+ 	    if [ "$d" = "$desktop" ]; then
+		c="*"
+	    else
+		c=""
+	    fi
 	    if [ -n "$gotoLines" ]
 	    then
-		gotoLines="`echo -e "$gotoLines\n$counter goto $window $commands"`"
+		gotoLines="`echo -e "$gotoLines\n$counter goto $window $c$commands"`"
 	    else
-		gotoLines="$counter goto $window $commands"
+		gotoLines="$counter goto $window $c$commands"
 	    fi
 	fi
 	lastCommands="$commands"
