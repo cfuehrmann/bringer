@@ -58,30 +58,29 @@ getWindows()
     bringLines=""
     counter=1
     desktop=`wmctrl -d | grep \* | cut -d " " -f 1`
+    local gotoLines=""
     for line in $sortLines 
-    do # todo: mark the active desktop
+    do 
 	local command=`echo $line | cut -d ":" -f 2`
 	local window=`echo $line | cut -d ":" -f 3`
 	local d=`echo $line | cut -d ":" -f 4`
 	local commands=`echo $line | cut -d ":" -f 1`
 	if [ "$commands" != "$lastCommands" ]
 	then
- 	    if [ "$d" = "$desktop" ]; then
-		c="*"
-	    else
-		c=""
-	    fi
 	    if [ -n "$gotoLines" ]
 	    then
-		gotoLines="`echo -e "$gotoLines\n$counter goto $window $c$commands"`"
-	    else
-		gotoLines="$counter goto $window $c$commands"
+		gotoLines="$gotoLines\n"
 	    fi
+	    gotoLines="$gotoLines$counter goto $window "
+ 	    if [ "$d" = "$desktop" ]; then
+		gotoLines="$gotoLines*"
+	    fi
+	    gotoLines="$gotoLines$commands"
 	fi
 	lastCommands="$commands"
 	let counter=$counter+1    
     done
-    echo "$gotoLines"
+    echo -e "$gotoLines"
 #echo "-------------------------------------------------------------------------------------------------------------------------------------------------------------------------$bringLines"
 #"$bringLines" on extra line causes trouble for some reason 
 #echo "-------------------------------------------------------------------------------------------------------------------------------------------------------------------------"
