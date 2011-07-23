@@ -31,12 +31,13 @@ getWindows()
     IFS=$'\n'
     local sortLines=""
     local lastDesktop
+    local commandWindowPairs
     for line in `wmctrl -lp`
     do 
 	local window=`echo $line | cut -d " " -f 1`
 	local desktop=`echo $line | cut -d " " -f 3`
 	local pid=`echo $line | cut -d " " -f 4`
-    #title=`echo $line | cut -d " " -f 1,2,3,4,5,6 --complement` 
+    #local title=`echo $line | cut -d " " -f 1,2,3,4,5,6 --complement` 
 	local command=`getCommand $pid`
 	if [ "$desktop" != "${lastDesktop}" ]; then
 	    if [ -n "${lastDesktop}" ]; then
@@ -46,15 +47,15 @@ getWindows()
 #	    bringLines="$bringLines`echo -e "$p bring $window $command"`"
  	    fi
 	    commandWindowPairs="$command:$window"
+	    lastDesktop=$desktop
 	else
 #	bringLines="$bringLines`echo -e "\n$p bring $window $command"`"
-	commandWindowPairs="${commandWindowPairs}\n$command:$window"
+	    commandWindowPairs="${commandWindowPairs}\n$command:$window"
 	fi
-	lastDesktop=$desktop
     done
     appendSortLines "$commandWindowPairs" "$lastDesktop"
     sortLines=`echo "$sortLines" | sort`
-    bringLines=""
+    # bringLines=""
     counter=1
     desktop=`wmctrl -d | grep \* | cut -d " " -f 1`
     local gotoLines=""
