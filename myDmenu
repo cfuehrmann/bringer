@@ -1,21 +1,113 @@
-#!/bin/sh
-desktop=`wmctrl -d | grep \* | cut -d " " -f 1`
+#!/bin/bash
+getCommand()
+{
+    ps -p $1 -o command= | sed 's/^[^ ]*\///g'
+}
 
-line=`(./getWindows;dmenu_path) | dmenu -i -l 13` 
+appendSortLines()
+{
+    sortCommands=""
+    commandWindowPairs=`echo "$commandWindowPairs" | sort`
+    for pair in $commandWindowPairs
+    do
+	local command="`echo $pair | cut -d ":" -f 1`"
+	if [ -z $sortCommands ] 
+	then
+	    sortCommands="$command"
+	else
+	    sortCommands="${sortCommands} --- $command"
+	fi
+    done
+    for pair in $commandWindowPairs
+    do
+    	sortLines="${sortLines}`echo -e "\n${sortCommands}:$pair:$dd"`"
+    done
+}
 
-echo $line | grep "goto"
+getWindows()
+{
+    IFS=$'\n'
+    windows=`wmctrl -lp` # | grep -v "^0x[0-9a-f]*  $desktop"`
+    sortLines=""
+    for line in $windows
+    do 
+	window=`echo $line | cut -d " " -f 1`
+	d=`echo $line | cut -d " " -f 3`
+	pid=`echo $line | cut -d " " -f 4`
+    #title=`echo $line | cut -d " " -f 1,2,3,4,5,6 --complement` 
+	command=`getCommand $pid`
+	if [ "$d" != "${loopDesktop}" ]; then
+ 	    if [ "$d" = "$desktop" ]; then
+		c="*"
+	    else
+		c=""
+	    fi
+	    if [ -n "${loopDesktop}" ]; then
+#	    bringLines="$bringLines`echo -e "\n$p bring $window $command"`"
+		appendSortLines
+#	else
+#	    bringLines="$bringLines`echo -e "$p bring $window $command"`"
+ 	    fi
+	    commandWindowPairs="$command:$window"
+	else
+#	bringLines="$bringLines`echo -e "\n$p bring $window $command"`"
+	commandWindowPairs="`echo -e "${commandWindowPairs}\n$command:$window"`"
+	fi
+	w=$window
+	dd=$d
+	loopDesktop=$d
+    done
+    appendSortLines
+    sortLines=`echo "$sortLines" | sort`
+    bringLines=""
+    counter=1
+    desktop=`wmctrl -d | grep \* | cut -d " " -f 1`
+    for line in $sortLines 
+    do # todo: mark the active desktop
+	command=`echo $line | cut -d ":" -f 2`
+	window=`echo $line | cut -d ":" -f 3`
+	d=`echo $line | cut -d ":" -f 3`
+	commandWindowPairs=`echo $line | cut -d ":" -f 1`
+	if [ "$commandWindowPairs" != "$lastCommands" ]
+	then
+	    if [ -n "$gotoLines" ]
+	    then
+		gotoLines="`echo -e "$gotoLines\n$counter goto $window $commandWindowPairs"`"
+	    else
+		gotoLines="$counter goto $window $commandWindowPairs"
+	    fi
+	fi
+	lastCommands="$commandWindowPairs"
+	let counter=$counter+1    
+    done
+    echo "$gotoLines"
+#echo "-------------------------------------------------------------------------------------------------------------------------------------------------------------------------$bringLines"
+#"$bringLines" on extra line causes trouble for some reason 
+#echo "-------------------------------------------------------------------------------------------------------------------------------------------------------------------------"
+}
 
-if [ "$?" -eq "0" ]; then
-    window=`echo $line | cut -d " " -f 3`
-    echo $window
-    wmctrl -ia $window
-else
-    echo $line | grep "bring"
-
+xxx()
+{
+    local desktop=`wmctrl -d | grep \* | cut -d " " -f 1`
+    
+    local line=`(getWindows;dmenu_path) | dmenu -i -l 13` 
+    
+    echo $line | grep "goto"
+    
     if [ "$?" -eq "0" ]; then
-	window=`echo $line | cut -d " " -f 3`
-	wmctrl -iR $window
+	local window=`echo $line | cut -d " " -f 3`
+	echo $window
+	wmctrl -ia $window
     else
-	exec $line
+	echo $line | grep "bring"
+	
+	if [ "$?" -eq "0" ]; then
+	    local window=`echo $line | cut -d " " -f 3`
+	    wmctrl -iR $window
+	else
+	    exec $line
+	fi
     fi
-fi
+}
+
+xxx
