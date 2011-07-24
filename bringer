@@ -1,14 +1,17 @@
 #!/bin/bash
 
+# remark: arrays seem to be of no use in this script because they
+# would require programming an alternative to "sort"
+# todo: re-implement "bringing", implement closing and history feature
+
 getCommand()
 {
     ps -p $1 -o command= | sed "s/^[^ ]*\///"
 }
 
-appendSortLines() # todo: clean up treatment of "external" parameter "sortLines"
+appendSortLines()
 {
     declare commandWindowPairs=`echo -e "$1" | sort`
-    declare -i desktop=$2
     declare sortCommands
     declare command
     for pair in $commandWindowPairs
@@ -23,14 +26,12 @@ appendSortLines() # todo: clean up treatment of "external" parameter "sortLines"
     done
     for pair in $commandWindowPairs
     do
-    	sortLines="$sortLines\n$sortCommands:$pair:$desktop"
+	echo "$sortCommands:$pair:$2" # $2 is the desktop
     done
 }
 
-getWindows()
+getSortLines()
 {
-    IFS=$'\n' # so that the e.g. for loop below uses newline as separator
-    declare sortLines=""
     declare -i lastDesktop=-1
     declare commandWindowPairs
     declare -i window
@@ -57,13 +58,19 @@ getWindows()
 	fi
     done
     appendSortLines "$commandWindowPairs" "$lastDesktop"
-    sortLines=`echo -e "$sortLines" | sort`
-    declare -i counter=1
-    declare -i visibleDesktop=`wmctrl -d | grep \* | cut -d " " -f 1`
-    declare gotoLines=""
+}
+
+getWindows()
+{
+    declare command
+    declare -i window
+    declare -i desktop
     declare commands
     declare lastCommands
-    for line in $sortLines 
+    declare gotoLines=""
+    declare -i visibleDesktop=`wmctrl -d | grep \* | cut -d " " -f 1`
+    declare -i counter=1
+    for line in `getSortLines | sort` 
     do 
 	command=`echo "$line" | cut -d : -f 2`
 	window=`echo "$line" | cut -d : -f 3`
@@ -81,7 +88,7 @@ getWindows()
 		gotoLines="$gotoLines*"
 	    fi
 	    gotoLines="$gotoLines$commands"
-	    let counter=$counter+1    
+	    counter=$counter+1    
 	fi
 	lastCommands=$commands
     done
@@ -93,6 +100,7 @@ getWindows()
 
 main()
     {
+	IFS=$'\n' # so that the e.g. for loop below uses newline as separator
 	declare line=`(getWindows;dmenu_path) | dmenu -i -l 13` 
 	declare -i window
 	
