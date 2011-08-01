@@ -1,107 +1,122 @@
 #!/bin/bash
 
+# todo: fix nesting; remove last for loop and IFS, ...
 # remark: arrays seem to be of no use in this script because they
 # would require programming an alternative to "sort"
 # todo: re-implement "bringing", implement closing and history feature
 
-getCommand()
-{
-    ps -p $1 -o command= | sed "s/^[^ ]*\///"
-}
-
-appendSortLines()
-{
-    declare commandWindowPairs=`echo -e "$1" | sort`
-    declare sortCommands
-    declare command
-    for pair in $commandWindowPairs
-    do
-	command=`echo "$pair" | cut -d : -f 1`
-	if [ ! $sortCommands ] 
-	then
-	    sortCommands=$command
-	else
-	    sortCommands="$sortCommands --- $command"
-	fi
-    done
-    for pair in $commandWindowPairs
-    do
-	echo "$sortCommands:$pair:$2" # $2 is the desktop
-    done
-}
-
-getSortLines()
-{
-    declare -i lastDesktop=-1
-    declare commandWindowPairs
-    declare -i window
-    declare -i desktop
-    declare -i pid
-    declare command
-    for line in `wmctrl -lp`
-    do 
-	window=`echo "$line" | cut -d " " -f 1`
-	desktop=`echo "$line" | cut -d " " -f 3`
-        pid=`echo "$line" | cut -d " " -f 4`
+main()
+    {
+	echoExtraEntries()
+	{
+	    echoSortLines()
+	    {
+		echoSortLinesForDesktop()
+		{
+		    echoSortCommandsOnOneLine()
+		    {
+			declare firstDone
+			while read command
+			do
+			    if [ ! $firstDone ] 
+			    then
+				firstDone=dummy
+			    else
+				echo -n " --- "
+			    fi
+			    echo -n "$command"
+			done
+		    }
+		    
+		    prefixSuffix()
+		    {
+			while read pair
+			do
+    			    echo "$1:$pair:$2"
+			done
+		    }
+		    
+		    declare commandWindowPairs=`echo -e "$1" | sort`
+		    declare sortCommands=`echo "$commandWindowPairs" | cut -d : -f 1 | echoSortCommandsOnOneLine`
+		    echo "$commandWindowPairs" | prefixSuffix "$sortCommands" "$2"
+		}
+		
+		getCommand()
+		{
+		    ps -p $1 -o command= | sed "s/^[^ ]*\///"
+		}
+		
+		processWindowLines()
+		{
+		    declare -i lastDesktop=-1
+		    declare commandWindowPairs
+		    declare -i window
+		    declare -i desktop
+		    declare -i pid
+		    declare command
+		    while read line
+		    do
+			window=`echo "$line" | cut -d " " -f 1`
+			desktop=`echo "$line" | cut -d " " -f 3`
+			pid=`echo "$line" | cut -d " " -f 4`
         # title=`echo "$line" | cut -d " " -f 1,2,3,4,5,6 --complement` 
-	command=`getCommand $pid`
-	if [ $desktop -ne $lastDesktop ]
-	then
-	    if [ $lastDesktop -ne -1 ]
-	    then
-		appendSortLines "$commandWindowPairs" "$lastDesktop"
- 	    fi
-	    commandWindowPairs=$command:$window
-	    lastDesktop=$desktop
-	else
-	    commandWindowPairs="$commandWindowPairs\n$command:$window"
-	fi
-    done
-    appendSortLines "$commandWindowPairs" "$lastDesktop"
-}
+			command=`getCommand $pid`
+			if [ $desktop -ne $lastDesktop ]
+			then
+			    if [ $lastDesktop -ne -1 ]
+			    then
+				echoSortLinesForDesktop "$commandWindowPairs" "$lastDesktop"
+ 			    fi
+			    commandWindowPairs=$command:$window
+			    lastDesktop=$desktop
+			else
+			    commandWindowPairs="$commandWindowPairs\n$command:$window"
+			fi
+		    done
+		    echoSortLinesForDesktop "$commandWindowPairs" "$lastDesktop"
+		}
 
-getWindows()
-{
-    declare command
-    declare -i window
-    declare -i desktop
-    declare commands
-    declare lastCommands
-    declare gotoLines=""
-    declare -i visibleDesktop=`wmctrl -d | grep \* | cut -d " " -f 1`
-    declare -i counter=1
-    for line in `getSortLines | sort` 
-    do 
-	command=`echo "$line" | cut -d : -f 2`
-	window=`echo "$line" | cut -d : -f 3`
-	desktop=`echo "$line" | cut -d : -f 4`
-	commands=`echo "$line" | cut -d : -f 1`
-	if [ "$commands" != "$lastCommands" ]
-	then
-	    if [ -n "$gotoLines" ]
-	    then
-		gotoLines="$gotoLines\n"
-	    fi
-	    gotoLines="$gotoLines$counter goto $window "
- 	    if [ $desktop -eq $visibleDesktop ] 
-	    then
-		gotoLines="$gotoLines*"
-	    fi
-	    gotoLines="$gotoLines$commands"
-	    counter=$counter+1    
-	fi
-	lastCommands=$commands
-    done
-    echo -e "$gotoLines"
+		wmctrl -lp | processWindowLines
+	    }
+	    
+	    declare command
+	    declare -i window
+	    declare -i desktop
+	    declare commands
+	    declare lastCommands
+	    declare gotoLines=""
+	    declare -i visibleDesktop=`wmctrl -d | grep \* | cut -d " " -f 1`
+	    declare -i counter=1
+	    for line in `echoSortLines | sort` 
+	    do 
+		command=`echo "$line" | cut -d : -f 2`
+		window=`echo "$line" | cut -d : -f 3`
+		desktop=`echo "$line" | cut -d : -f 4`
+		commands=`echo "$line" | cut -d : -f 1`
+		if [ "$commands" != "$lastCommands" ]
+		then
+		    if [ -n "$gotoLines" ]
+		    then
+			gotoLines="$gotoLines\n"
+		    fi
+		    gotoLines="$gotoLines$counter goto $window "
+ 		    if [ $desktop -eq $visibleDesktop ] 
+		    then
+			gotoLines="$gotoLines*"
+		    fi
+		    gotoLines="$gotoLines$commands"
+		    counter=$counter+1    
+		fi
+		lastCommands=$commands
+	    done
+	    echo -e "$gotoLines"
 #echo "-------------------------------------------------------------------------------------------------------------------------------------------------------------------------$bringLines"
 #"$bringLines" on extra line causes trouble for some reason 
 #echo "-------------------------------------------------------------------------------------------------------------------------------------------------------------------------"
-}
-
-main()
-    {
+	}
+	
 	IFS=$'\n' # so that the e.g. for loop below uses newline as separator
-	declare line=`(getWindows;dmenu_path) | dmenu -i -l 13` 
+	declare line=`(echoExtraEntries;dmenu_path) | dmenu -i -l 13` 
 	declare -i window
 	
 	if echo "$line" | grep goto
