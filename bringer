@@ -78,7 +78,7 @@ echoExtraEntries()
 	declare -i desktop
 	declare commands
 	declare lastCommands
-	declare gotoLines=""
+	declare firstDone
 	declare -i visibleDesktop=`wmctrl -d | grep \* | cut -d " " -f 1`
 	declare -i counter=0
 	while read line
@@ -89,21 +89,22 @@ echoExtraEntries()
 	    commands=`echo "$line" | cut -d : -f 1`
 	    if [ "$commands" != "$lastCommands" ]
 	    then
-		if [ -n "$gotoLines" ]
+		if [ $firstDone ]
 		then
-		    gotoLines="$gotoLines\n"
+		    echo
 		fi
-		gotoLines="$gotoLines$counter goto $window "
+		firstDone=dummy
+		echo -n "$counter goto $window "
  		if [ $desktop -eq $visibleDesktop ] 
 		then
-		    gotoLines="$gotoLines*"
+		    echo -n "*"
 		fi
-		gotoLines="$gotoLines$commands"
+		echo -n "$commands"
 		counter=$counter+1    
 	    fi
 	    lastCommands=$commands
 	done
-	echo -e "$gotoLines"
+	echo
 	echo "-------------------------------------------------------------------------------------------------------------------------------------------------------------------------"
 	function showHistory
 	{
