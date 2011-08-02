@@ -72,43 +72,47 @@ echoExtraEntries()
 	echoSortLinesForDesktop "$commandWindowPairs" "$lastDesktop"
     }
     
-    declare command
-    declare -i window
-    declare -i desktop
-    declare commands
-    declare lastCommands
-    declare gotoLines=""
-    declare -i visibleDesktop=`wmctrl -d | grep \* | cut -d " " -f 1`
-    declare -i counter=1
-    for line in `wmctrl -lp | echoSortLines | sort` 
-    do 
-	command=`echo "$line" | cut -d : -f 2`
-	window=`echo "$line" | cut -d : -f 3`
-	desktop=`echo "$line" | cut -d : -f 4`
-	commands=`echo "$line" | cut -d : -f 1`
-	if [ "$commands" != "$lastCommands" ]
-	then
-	    if [ -n "$gotoLines" ]
+    xxx()
+    {
+	declare command
+	declare -i window
+	declare -i desktop
+	declare commands
+	declare lastCommands
+	declare gotoLines=""
+	declare -i visibleDesktop=`wmctrl -d | grep \* | cut -d " " -f 1`
+	declare -i counter=1
+	while read line
+	do
+	    command=`echo "$line" | cut -d : -f 2`
+	    window=`echo "$line" | cut -d : -f 3`
+	    desktop=`echo "$line" | cut -d : -f 4`
+	    commands=`echo "$line" | cut -d : -f 1`
+	    if [ "$commands" != "$lastCommands" ]
 	    then
-		gotoLines="$gotoLines\n"
+		if [ -n "$gotoLines" ]
+		then
+		    gotoLines="$gotoLines\n"
+		fi
+		gotoLines="$gotoLines$counter goto $window "
+ 		if [ $desktop -eq $visibleDesktop ] 
+		then
+		    gotoLines="$gotoLines*"
+		fi
+		gotoLines="$gotoLines$commands"
+		counter=$counter+1    
 	    fi
-	    gotoLines="$gotoLines$counter goto $window "
- 	    if [ $desktop -eq $visibleDesktop ] 
-	    then
-		gotoLines="$gotoLines*"
-	    fi
-	    gotoLines="$gotoLines$commands"
-	    counter=$counter+1    
-	fi
-	lastCommands=$commands
-    done
-    echo -e "$gotoLines"
+	    lastCommands=$commands
+	done
+	echo -e "$gotoLines"
+    }
+
+    wmctrl -lp | echoSortLines | sort | xxx
 #echo "-------------------------------------------------------------------------------------------------------------------------------------------------------------------------$bringLines"
 #"$bringLines" on extra line causes trouble for some reason 
 #echo "-------------------------------------------------------------------------------------------------------------------------------------------------------------------------"
 }
 
-IFS=$'\n' # so that the e.g. for loop below uses newline as separator
 declare line=`(echoExtraEntries;dmenu_path) | dmenu -i -l 13` 
 declare -i window
 
