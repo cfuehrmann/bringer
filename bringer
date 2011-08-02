@@ -80,7 +80,7 @@ echoExtraEntries()
 	declare lastCommands
 	declare gotoLines=""
 	declare -i visibleDesktop=`wmctrl -d | grep \* | cut -d " " -f 1`
-	declare -i counter=1
+	declare -i counter=0
 	while read line
 	do
 	    command=`echo "$line" | cut -d : -f 2`
@@ -120,7 +120,7 @@ echoExtraEntries()
     wmctrl -lp | echoSortLines | sort | echoGotoLines
 }
 
-declare line=`(echoExtraEntries;dmenu_path) | dmenu -i -l 13` 
+declare line=`(echoExtraEntries;dmenu_path) | dmenu -i -l 11` 
 echo $?
 declare -i window
 case "$line" in # todo: improve the case patterns
