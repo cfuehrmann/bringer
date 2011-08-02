@@ -1,6 +1,5 @@
 #!/bin/bash
 
-# todo: fix nesting; remove last for loop and IFS, ...
 # remark: arrays seem to be of no use in this script because they
 # would require programming an alternative to "sort"
 # todo: re-implement "bringing", implement closing and history feature
@@ -72,7 +71,7 @@ echoExtraEntries()
 	echoSortLinesForDesktop "$commandWindowPairs" "$lastDesktop"
     }
     
-    xxx()
+    echoGotoLines()
     {
 	declare command
 	declare -i window
@@ -107,7 +106,7 @@ echoExtraEntries()
 	echo -e "$gotoLines"
     }
 
-    wmctrl -lp | echoSortLines | sort | xxx
+    wmctrl -lp | echoSortLines | sort | echoGotoLines
 #echo "-------------------------------------------------------------------------------------------------------------------------------------------------------------------------$bringLines"
 #"$bringLines" on extra line causes trouble for some reason 
 #echo "-------------------------------------------------------------------------------------------------------------------------------------------------------------------------"
