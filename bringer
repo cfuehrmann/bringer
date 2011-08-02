@@ -114,19 +114,31 @@ echoExtraEntries()
 
 declare line=`(echoExtraEntries;dmenu_path) | dmenu -i -l 13` 
 declare -i window
-
-if echo "$line" | grep goto
-then
-    window=`echo "$line" | cut -d " " -f 3`
-    wmctrl -ia $window
-else
-    echo "$line" | grep bring
-    
-    if echo "$line" | grep bring 
-    then
+case `echo "$line"` in
+    *goto*)
 	window=`echo "$line" | cut -d " " -f 3`
-	wmctrl -iR $window
-    else
+	wmctrl -ia $window
+	;;
+    *bring*)
+ 	window=`echo "$line" | cut -d " " -f 3`
+ 	wmctrl -iR $window
+	;;
+    *)
 	exec $line
-    fi
-fi
+	;;
+esac
+# if echo "$line" | grep goto
+# then
+#     window=`echo "$line" | cut -d " " -f 3`
+#     wmctrl -ia $window
+# else
+#     echo "$line" | grep bring
+    
+#     if echo "$line" | grep bring 
+#     then
+# 	window=`echo "$line" | cut -d " " -f 3`
+# 	wmctrl -iR $window
+#     else
+# 	exec $line
+#     fi
+# fi
