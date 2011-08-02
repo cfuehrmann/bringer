@@ -44,37 +44,32 @@ echoExtraEntries()
 	    ps -p $1 -o command= | sed "s/^[^ ]*\///"
 	}
 	
-	processWindowLines()
-	{
-	    declare -i lastDesktop=-1
-	    declare commandWindowPairs
-	    declare -i window
-	    declare -i desktop
-	    declare -i pid
-	    declare command
-	    while read line
-	    do
-		window=`echo "$line" | cut -d " " -f 1`
-		desktop=`echo "$line" | cut -d " " -f 3`
-		pid=`echo "$line" | cut -d " " -f 4`
+	declare -i lastDesktop=-1
+	declare commandWindowPairs
+	declare -i window
+	declare -i desktop
+	declare -i pid
+	declare command
+	while read line
+	do
+	    window=`echo "$line" | cut -d " " -f 1`
+	    desktop=`echo "$line" | cut -d " " -f 3`
+	    pid=`echo "$line" | cut -d " " -f 4`
         # title=`echo "$line" | cut -d " " -f 1,2,3,4,5,6 --complement` 
-		command=`getCommand $pid`
-		if [ $desktop -ne $lastDesktop ]
+	    command=`getCommand $pid`
+	    if [ $desktop -ne $lastDesktop ]
+	    then
+		if [ $lastDesktop -ne -1 ]
 		then
-		    if [ $lastDesktop -ne -1 ]
-		    then
-			echoSortLinesForDesktop "$commandWindowPairs" "$lastDesktop"
- 		    fi
-		    commandWindowPairs=$command:$window
-		    lastDesktop=$desktop
-		else
-		    commandWindowPairs="$commandWindowPairs\n$command:$window"
-		fi
-	    done
-	    echoSortLinesForDesktop "$commandWindowPairs" "$lastDesktop"
-	}
-	
-	wmctrl -lp | processWindowLines
+		    echoSortLinesForDesktop "$commandWindowPairs" "$lastDesktop"
+ 		fi
+		commandWindowPairs=$command:$window
+		lastDesktop=$desktop
+	    else
+		commandWindowPairs="$commandWindowPairs\n$command:$window"
+	    fi
+	done
+	echoSortLinesForDesktop "$commandWindowPairs" "$lastDesktop"
     }
     
     declare command
@@ -85,7 +80,7 @@ echoExtraEntries()
     declare gotoLines=""
     declare -i visibleDesktop=`wmctrl -d | grep \* | cut -d " " -f 1`
     declare -i counter=1
-    for line in `echoSortLines | sort` 
+    for line in `wmctrl -lp | echoSortLines | sort` 
     do 
 	command=`echo "$line" | cut -d : -f 2`
 	window=`echo "$line" | cut -d : -f 3`
