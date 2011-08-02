@@ -104,18 +104,26 @@ echoExtraEntries()
 	    lastCommands=$commands
 	done
 	echo -e "$gotoLines"
+	echo "-------------------------------------------------------------------------------------------------------------------------------------------------------------------------"
+	function showHistory
+	{
+	    while read line
+	    do
+		echo "$counter $line"
+		counter=$counter+1    
+	    done
+	}
+	cat .bringerHistory | showHistory
+	echo "-------------------------------------------------------------------------------------------------------------------------------------------------------------------------"
     }
 
     wmctrl -lp | echoSortLines | sort | echoGotoLines
-    echo "-------------------------------------------------------------------------------------------------------------------------------------------------------------------------"
-    cat .bringerHistory
-    echo "-------------------------------------------------------------------------------------------------------------------------------------------------------------------------"
 }
 
 declare line=`(echoExtraEntries;dmenu_path) | dmenu -i -l 13` 
 echo $?
 declare -i window
-case "$line" in
+case "$line" in # todo: improve the case patterns
     *goto*)
 	window=`echo "$line" | cut -d " " -f 3`
 	wmctrl -ia $window
@@ -124,6 +132,13 @@ case "$line" in
     # 	window=`echo "$line" | cut -d " " -f 3`
     # 	wmctrl -iR $window
     # 	;;
+    [0-9]*) # a pick from the history
+	cp .bringerHistory .bringerHistoryTmp
+	declare command=`echo "$line" | cut --complement -d " " -f 1`
+	echo "$command" > .bringerHistory
+	cat .bringerHistoryTmp >> .bringerHistory
+	exec $command
+	;;
     ?*) # non-empty string
 	cp .bringerHistory .bringerHistoryTmp
 	echo "$line" > .bringerHistory
