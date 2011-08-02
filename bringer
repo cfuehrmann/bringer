@@ -107,38 +107,27 @@ echoExtraEntries()
     }
 
     wmctrl -lp | echoSortLines | sort | echoGotoLines
-#echo "-------------------------------------------------------------------------------------------------------------------------------------------------------------------------$bringLines"
-#"$bringLines" on extra line causes trouble for some reason 
-#echo "-------------------------------------------------------------------------------------------------------------------------------------------------------------------------"
+    echo "-------------------------------------------------------------------------------------------------------------------------------------------------------------------------"
+    cat .bringerHistory
+    echo "-------------------------------------------------------------------------------------------------------------------------------------------------------------------------"
 }
 
 declare line=`(echoExtraEntries;dmenu_path) | dmenu -i -l 13` 
+echo $?
 declare -i window
-case `echo "$line"` in
+case "$line" in
     *goto*)
 	window=`echo "$line" | cut -d " " -f 3`
 	wmctrl -ia $window
 	;;
-    *bring*)
- 	window=`echo "$line" | cut -d " " -f 3`
- 	wmctrl -iR $window
-	;;
-    *)
+    # *bring*) # conflicts with "bringer"
+    # 	window=`echo "$line" | cut -d " " -f 3`
+    # 	wmctrl -iR $window
+    # 	;;
+    ?*) # non-empty string
+	cp .bringerHistory .bringerHistoryTmp
+	echo "$line" > .bringerHistory
+	cat .bringerHistoryTmp >> .bringerHistory
 	exec $line
 	;;
 esac
-# if echo "$line" | grep goto
-# then
-#     window=`echo "$line" | cut -d " " -f 3`
-#     wmctrl -ia $window
-# else
-#     echo "$line" | grep bring
-    
-#     if echo "$line" | grep bring 
-#     then
-# 	window=`echo "$line" | cut -d " " -f 3`
-# 	wmctrl -iR $window
-#     else
-# 	exec $line
-#     fi
-# fi
