@@ -1,7 +1,5 @@
 #!/bin/bash
 
-# todo: clean up
-# todo: where can i use arrays, and do they make things faster?
 # todo: re-implement "bringing", implement closing and history feature
 
 function echoExtraEntries
@@ -74,7 +72,7 @@ function echoExtraEntries
 	echoSortLinesForDesktop "$commandWindowPairs" "$lastDesktop"
     }
     
-    function echoGotoLines
+    function echoAllLines
     {
 	declare command
 	declare -i window
@@ -140,7 +138,7 @@ function echoExtraEntries
 	echo "-------------------------------------------------------------------------------------------------------------------------------------------------------------------------"
     }
 
-    wmctrl -lp | echoSortLines | sort | echoGotoLines
+    wmctrl -lp | echoSortLines | sort | echoAllLines
 }
 
 declare line=`(echoExtraEntries;dmenu_path) | dmenu -i -l 11` 
