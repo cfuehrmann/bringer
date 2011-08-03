@@ -33,7 +33,7 @@ function echoExtraEntries
 		declare s
 		while read s
 		do
-    		    echo "$1:$s:$2"
+    		    echo "$1:$2:$s"
 		done
 	    }
 	    
@@ -81,18 +81,18 @@ function echoExtraEntries
 	declare command
 	declare -i window
 	declare -i desktop
+	declare -i lastDesktop=-1
 	declare commands
-	declare lastCommands
 	declare firstDone
 	declare -i visibleDesktop=`wmctrl -d | grep \* | cut -d " " -f 1`
 	declare line
 	while read line
 	do
-	    command=`echo "$line" | cut -d : -f 2`
-	    window=`echo "$line" | cut -d : -f 3`
-	    desktop=`echo "$line" | cut -d : -f 4`
+	    command=`echo "$line" | cut -d : -f 3`
+	    window=`echo "$line" | cut -d : -f 4`
+	    desktop=`echo "$line" | cut -d : -f 2`
 	    commands=`echo "$line" | cut -d : -f 1`
-	    if [ "$commands" != "$lastCommands" ] # todo: two desktops can have the same set of commands!
+	    if [ $desktop -ne $lastDesktop ] # todo: two desktops can have the same set of commands!
 	    then
 		if [ $firstDone ]
 		then
@@ -107,7 +107,7 @@ function echoExtraEntries
 		fi
 		echo -n "$commands"
 	    fi
-	    lastCommands=$commands
+	    lastDesktop=$desktop
 	done
 	echo
 
