@@ -1,6 +1,10 @@
 #!/bin/bash
 
-# todo: re-implement "bringing", implement closing and history feature
+# todo: 
+# todos below 
+# re-implement "bringing"
+# implement closing
+# check double/single quoting etc.
 
 function echoExtraEntries
 {
@@ -81,7 +85,6 @@ function echoExtraEntries
 	declare lastCommands
 	declare firstDone
 	declare -i visibleDesktop=`wmctrl -d | grep \* | cut -d " " -f 1`
-	declare -i counter=0
 	declare line
 	while read line
 	do
@@ -89,26 +92,24 @@ function echoExtraEntries
 	    window=`echo "$line" | cut -d : -f 3`
 	    desktop=`echo "$line" | cut -d : -f 4`
 	    commands=`echo "$line" | cut -d : -f 1`
-	    if [ "$commands" != "$lastCommands" ]
+	    if [ "$commands" != "$lastCommands" ] # todo: two desktops can have the same set of commands!
 	    then
 		if [ $firstDone ]
 		then
 		    echo
+		else
+		    firstDone=dummy
 		fi
-		firstDone=dummy
-		echo -n "$counter goto $window "
+		echo -n "g $window "
  		if [ $desktop -eq $visibleDesktop ] 
 		then
 		    echo -n "*"
 		fi
 		echo -n "$commands"
-		counter=$counter+1    
 	    fi
 	    lastCommands=$commands
 	done
 	echo
-	echo -n "------------------------------------------------------------------------------------------------------------------------------------------------------------------- "
-	date +%H:%M
 
 	function echoFrequencies
 	{
@@ -127,11 +128,17 @@ function echoExtraEntries
 	function echoMFU
 	{
 	    declare line
+	    declare firstDone
 	    while read line
 	    do
-		echo -n "$counter "
-		echo "$line" | cut -d " " --complement -f 1
-		counter=$counter+1    
+		echo -n "h "
+		if [ $firstDone ]
+		then
+		    echo "$line" | cut -d " " --complement -f 1
+		else
+		    echo "`echo "$line" | cut -d " " --complement -f 1` --- `date +%H:%M`" # todo: enough hyphens to reach right side
+		    firstDone=dummy
+		fi
 	    done
 	}
 
@@ -145,17 +152,17 @@ function echoExtraEntries
 declare line=`(echoExtraEntries;dmenu_path) | dmenu -i -l 11` 
 declare -i window
 case "$line" in # todo: improve the case patterns
-    *goto*)
-	window=`echo "$line" | cut -d " " -f 3`
+    "g "*)
+	window=`echo "$line" | cut -d " " -f 2`
 	wmctrl -ia $window
 	;;
     # *bring*) # conflicts with "bringer"
     # 	window=`echo "$line" | cut -d " " -f 3`
     # 	wmctrl -iR $window
     # 	;;
-    [0-9]*) # a pick from the history
+    "h "*)
 	cp .bringerHistory .bringerHistoryTmp
-	declare command=`echo "$line" | cut --complement -d " " -f 1`
+	declare command=`echo "$line" | sed 's/^h \(.*\)\(---.*\|$\)/\1/'`
 	echo "$command" > .bringerHistory
 	cat .bringerHistoryTmp >> .bringerHistory
 	exec $command
