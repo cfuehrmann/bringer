@@ -1,10 +1,10 @@
 #!/bin/bash
 
 # todo: 
-# todos below 
 # re-implement "bringing"
 # implement closing
 # check double/single quoting etc.
+# todos below 
 
 function echoExtraEntries
 {
@@ -92,7 +92,7 @@ function echoExtraEntries
 	    window=`echo "$line" | cut -d : -f 4`
 	    desktop=`echo "$line" | cut -d : -f 2`
 	    commands=`echo "$line" | cut -d : -f 1`
-	    if [ $desktop -ne $lastDesktop ] # todo: two desktops can have the same set of commands!
+	    if [ $desktop -ne $lastDesktop ] 
 	    then
 		if [ $firstDone ]
 		then
