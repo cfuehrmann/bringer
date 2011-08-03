@@ -1,18 +1,19 @@
 #!/bin/bash
 
-# remark: arrays seem to be of no use in this script because they
-# would require programming an alternative to "sort"
+# todo: clean up
+# todo: where can i use arrays, and do they make things faster?
 # todo: re-implement "bringing", implement closing and history feature
 
-echoExtraEntries()
+function echoExtraEntries
 {
-    echoSortLines()
+    function echoSortLines
     {
-	echoSortLinesForDesktop()
+	function echoSortLinesForDesktop
 	{
-	    echoSortCommandsOnOneLine()
+	    function echoSortCommandsOnOneLine
 	    {
 		declare firstDone
+		declare command
 		while read command
 		do
 		    if [ ! $firstDone ] 
@@ -25,8 +26,9 @@ echoExtraEntries()
 		done
 	    }
 	    
-	    prefixSuffix()
+	    function prefixSuffix
 	    {
+		declare pair
 		while read pair
 		do
     		    echo "$1:$pair:$2"
@@ -38,7 +40,7 @@ echoExtraEntries()
 	    echo "$commandWindowPairs" | prefixSuffix "$sortCommands" "$2"
 	}
 	
-	getCommand()
+	function getCommand
 	{
 	    ps -p $1 -o command= | sed "s/^[^ ]*\///"
 	}
@@ -49,6 +51,7 @@ echoExtraEntries()
 	declare -i desktop
 	declare -i pid
 	declare command
+	declare line
 	while read line
 	do
 	    window=`echo "$line" | cut -d " " -f 1`
@@ -71,7 +74,7 @@ echoExtraEntries()
 	echoSortLinesForDesktop "$commandWindowPairs" "$lastDesktop"
     }
     
-    echoGotoLines()
+    function echoGotoLines
     {
 	declare command
 	declare -i window
@@ -81,6 +84,7 @@ echoExtraEntries()
 	declare firstDone
 	declare -i visibleDesktop=`wmctrl -d | grep \* | cut -d " " -f 1`
 	declare -i counter=0
+	declare line
 	while read line
 	do
 	    command=`echo "$line" | cut -d : -f 2`
@@ -106,15 +110,32 @@ echoExtraEntries()
 	done
 	echo
 	echo "-------------------------------------------------------------------------------------------------------------------------------------------------------------------------"
-	function showHistory
+
+	function echoFrequencies
 	{
+	    declare -Ai frequencies
+	    declare line
 	    while read line
 	    do
-		echo "$counter $line"
+		frequencies["$line"]=${frequencies["$line"]}+1
+	    done
+	    for key in "${!frequencies[@]}"
+	    do
+		echo ${frequencies["$key"]} "$key"
+	    done
+	}
+
+	function echoMFU
+	{
+	    declare line
+	    while read line
+	    do
+		echo -n "$counter "
+		echo "$line" | cut -d " " --complement -f 1
 		counter=$counter+1    
 	    done
 	}
-	cat .bringerHistory | showHistory
+	cat .bringerHistory | echoFrequencies | sort -nr | echoMFU
 	echo "-------------------------------------------------------------------------------------------------------------------------------------------------------------------------"
     }
 
