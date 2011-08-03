@@ -10,11 +10,11 @@ function echoExtraEntries
     {
 	function echoSortLinesForDesktop
 	{
-	    function echoSortCommandsOnOneLine
+	    function echoOnOneLine
 	    {
 		declare firstDone
-		declare command
-		while read command
+		declare s
+		while read s
 		do
 		    if [ ! $firstDone ] 
 		    then
@@ -22,22 +22,22 @@ function echoExtraEntries
 		    else
 			echo -n " --- "
 		    fi
-		    echo -n "$command"
+		    echo -n "$s"
 		done
 	    }
 	    
-	    function prefixSuffix
+	    function echoPrefixSuffix
 	    {
-		declare pair
-		while read pair
+		declare s
+		while read s
 		do
-    		    echo "$1:$pair:$2"
+    		    echo "$1:$s:$2"
 		done
 	    }
 	    
 	    declare commandWindowPairs=`echo -e "$1" | sort`
-	    declare sortCommands=`echo "$commandWindowPairs" | cut -d : -f 1 | echoSortCommandsOnOneLine`
-	    echo "$commandWindowPairs" | prefixSuffix "$sortCommands" "$2"
+	    declare sortCommands=`echo "$commandWindowPairs" | cut -d : -f 1 | echoOnOneLine`
+	    echo "$commandWindowPairs" | echoPrefixSuffix "$sortCommands" "$2"
 	}
 	
 	function getCommand
@@ -135,6 +135,7 @@ function echoExtraEntries
 		counter=$counter+1    
 	    done
 	}
+
 	cat .bringerHistory | echoFrequencies | sort -nr | echoMFU
 	echo "-------------------------------------------------------------------------------------------------------------------------------------------------------------------------"
     }
@@ -143,7 +144,6 @@ function echoExtraEntries
 }
 
 declare line=`(echoExtraEntries;dmenu_path) | dmenu -i -l 11` 
-echo $?
 declare -i window
 case "$line" in # todo: improve the case patterns
     *goto*)
