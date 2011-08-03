@@ -28,7 +28,7 @@ function echoExtraEntries
 		done
 	    }
 	    
-	    function echoPrefixSuffix
+	    function echoPrefix
 	    {
 		declare s
 		while read s
@@ -39,7 +39,7 @@ function echoExtraEntries
 	    
 	    declare commandWindowPairs=`echo -e "$1" | sort`
 	    declare sortCommands=`echo "$commandWindowPairs" | cut -d : -f 1 | echoOnOneLine`
-	    echo "$commandWindowPairs" | echoPrefixSuffix "$sortCommands" "$2"
+	    echo "$commandWindowPairs" | echoPrefix "$sortCommands" "$2"
 	}
 	
 	function getCommand
