@@ -164,40 +164,59 @@ let get_history_lines () =
 	  m :: t
     end;;
 
-let ic, oc = Unix.open_process "dmenu -i -l 11" in
-output_string oc (get_goto_lines ());
-output_string oc (get_history_lines ());
-close_out oc;
-let l = input_line ic in
-let _ = Unix.close_process (ic, oc) in
-if Str.string_match (Str.regexp "^g \([0-9]+\) .*") l 0 then  let m = Str.matched_group 1 l in 
-							      Sys.command ("wmctrl -ia" ^ m) 
-else if Str.string_match 
-    (Str.regexp "^h \(.*\)") l 0 then begin
+let run_command m =
+  let pid = Unix.create_process m [| |] Unix.stdin 
+    Unix.stdout Unix.stderr in
+  let q = Queue.create () in 
+  begin
+    let ic = open_in "/home/carsten/.bringerHistory" in
+    try
+      while true do
+	Queue.push (input_line ic) q
+      done
+    with 
+	End_of_file -> close_in ic
+  end;
+  begin
+    let oc = open_out "/home/carsten/.bringerHistory" in
+    output_string oc (m ^ "\n"); 
+    try
+      while true do
+	output_string oc (Queue.pop q ^ "\n")
+      done
+    with 
+	Queue.Empty -> close_out oc
+  end;
+  pid;;
+
+let l = 
+  let ic, oc = Unix.open_process "dmenu -i -l 11" in
+  output_string oc (get_goto_lines ());
+  output_string oc (get_history_lines ());
+  begin
+    let i = Unix.open_process_in "dmenu_path" in
+    try
+      while true do
+	output_string oc ("\n" ^ input_line i)
+      done
+    with 
+      | End_of_file -> ignore (Unix.close_process_in i)
+  end;
+  close_out oc;
+  let l = 
+    try input_line ic with
+      |	e -> 
+	let _ = Unix.close_process (ic, oc) in
+	raise e in  
+  let _ = Unix.close_process (ic, oc) in
+  l in
+if Str.string_match (Str.regexp "^g \\([0-9]+\\) .*") l 0 then
+  Sys.command ("wmctrl -ia" ^ (Str.matched_group 1 l)) 
+else  
+  let command =
+    if Str.string_match (Str.regexp "^h \\(.*\\)") l 0 then 
       let n = Str.matched_group 1 l in
       let m = List.hd (Str.split (Str.regexp " --- ") n) in 
-      print_endline m;
-      let q = Queue.create () in
-      let ic = open_in "/home/carsten/.bringerHistory" in
-      begin
-	try
-	  while true do
-	    Queue.push (input_line ic) q
-	  done
-	with End_of_file -> ()
-      end;
-      close_in ic;
-      let oc = open_out "/home/carsten/.bringerHistory" in
-      begin
-	output_string oc (m ^ "\n"); 
-	try
-	  while true do
-	    output_string oc (Queue.pop q ^ "\n")
-	  done
-	with Queue.Empty -> ()
-      end;
-      close_out oc;
-      print_endline m;
-      Sys.command m
-    end
-else -1;;
+      m
+    else l in
+  run_command command;;
