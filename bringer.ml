@@ -164,30 +164,37 @@ let get_history_lines () =
 	  m :: t
     end;;
 
+(* Unix.create_process m [| |] Unix.stdin  *)
+(*     Unix.stdout Unix.stderr in *)
+
 let run_command m =
-  let pid = Unix.create_process m [| |] Unix.stdin 
-    Unix.stdout Unix.stderr in
-  let q = Queue.create () in 
-  begin
-    let ic = open_in "/home/carsten/.bringerHistory" in
-    try
-      while true do
-	Queue.push (input_line ic) q
-      done
-    with 
-	End_of_file -> close_in ic
-  end;
-  begin
-    let oc = open_out "/home/carsten/.bringerHistory" in
-    output_string oc (m ^ "\n"); 
-    try
-      while true do
-	output_string oc (Queue.pop q ^ "\n")
-      done
-    with 
-	Queue.Empty -> close_out oc
-  end;
-  pid;;
+  let p = Unix.fork () in
+  if p = 0 then 
+    begin
+      let _ = Unix.execvp "sh" [| m; "-c"; ("exec " ^ m) |] in 
+      exit (-1)
+    end
+  else
+    let q = Queue.create () in 
+    begin
+      let ic = open_in "/home/carsten/.bringerHistory" in
+      try
+	while true do
+	  Queue.push (input_line ic) q
+	done
+      with 
+	  End_of_file -> close_in ic
+    end;
+    begin
+      let oc = open_out "/home/carsten/.bringerHistory" in
+      output_string oc (m ^ "\n"); 
+      try
+	while true do
+	  output_string oc (Queue.pop q ^ "\n")
+	done
+      with 
+	  Queue.Empty -> close_out oc
+    end;;
 
 let l = 
   let ic, oc = Unix.open_process "dmenu -i -l 11" in
@@ -211,7 +218,8 @@ let l =
   let _ = Unix.close_process (ic, oc) in
   l in
 if Str.string_match (Str.regexp "^g \\([0-9]+\\) .*") l 0 then
-  Sys.command ("wmctrl -ia" ^ (Str.matched_group 1 l)) 
+  let _ = Sys.command 
+    ("wmctrl -ia" ^ (Str.matched_group 1 l)) in () 
 else  
   let command =
     if Str.string_match (Str.regexp "^h \\(.*\\)") l 0 then 
