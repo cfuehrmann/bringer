@@ -1,105 +1,96 @@
-(* #!/usr/bin/lablgtk2 *)
+(* #!/usr/bin/lablgtk2                                                        *)
+(* todo: weiter mit fixes bei "gotos" *)
 
-let rec string_of_list string_of_element delimiter = 
-  function
-    | [h] -> string_of_element h
-    | h :: t -> 
-      string_of_element h ^ delimiter ^ 
-	string_of_list string_of_element delimiter t
-    | [] -> "";; 
+let rec string_of_list string_of_element delimiter = function
+  | [h] -> string_of_element h
+  | h :: t -> 
+    string_of_element h ^ delimiter ^ 
+      string_of_list string_of_element delimiter t
+  | [] -> "";; 
 
-let list_of_hashtbl h = 
-  Hashtbl.fold (fun k v l -> (k, v) :: l) 
-    h [];;
+let list_from_hashtbl h = Hashtbl.fold (fun k v l -> (k, v) :: l) h [];;
 
 (* todo: for performance, use ps -Ao pid,command *) 
-let get_command pid =
-  let ic = 
-    Unix.open_process_in 
-      ("ps -p " ^ string_of_int pid ^ " -o command=") in
-  Str.replace_first 
-    (Str.regexp "^[^ ]*/") "" (input_line ic);;
-
-let get_current_desktop () =
-  let ic = Unix.open_process_in "wmctrl -d" in
-  let rec f () =
-    Scanf.fscanf ic "%i %s %s@\n"	   
-      begin 
-	fun desktop marker rest ->
-	  if marker = "*" then desktop else f () 
-      end in  
+let command pid =
+  let ic = Unix.open_process_in (Printf.sprintf "ps -p %d -o command=" pid) in
   try
-    let result = f () in 
-    let _ = Unix.close_process_in ic in result
+    let line = input_line ic in 
+    let result = Str.replace_first (Str.regexp "^[^ ]*/") "" line in
+    let _ = Unix.close_process_in ic in
+    result
   with 
-      End_of_file -> 
-	let _ = Unix.close_process_in ic in
-	raise Not_found;;
-  
-let get_windows_per_desktop () =
-  let result = Hashtbl.create 5 in
-  begin
-    let ic = Unix.open_process_in "wmctrl -lp" in
-    begin
-      try
-	while true do
-	  Scanf.fscanf ic "%i %i %i %s %s@\n"	   
-	    begin 
-	      fun window desktop pid host title ->
-		Hashtbl.add result desktop
-		  (window, get_command pid)
-	    end
-	done
-      with 
-	  End_of_file -> ()
-    end;
-    let _ = Unix.close_process_in ic in ()
-  end;
-  result;;
+    | e -> 
+      let _ = Unix.close_process_in ic in 
+      raise e;;
+                          
+let current_desktop () =
+  let ic = Unix.open_process_in "wmctrl -d" in
+  try
+    let rec loop () =
+      Scanf.fscanf ic "%i %s %s@\n" 
+	(fun desktop marker rest ->
+	  if marker = "*" then desktop else loop ()) in
+    let result = loop () in 
+    let _ = Unix.close_process_in ic in 
+    result
+  with 
+    | e -> 
+      let _ = Unix.close_process_in ic in
+      raise e;;
 
-let get_window_list_per_desktop () = 
+let windows_per_desktop () =
+  let result = Hashtbl.create 5 in
+  let ic = Unix.open_process_in "wmctrl -lp" in
+  try
+    let rec loop () =
+      Scanf.fscanf ic "%i %i %i %s %s@\n"	   
+	(fun window desktop pid host title ->
+	  Hashtbl.add result desktop (window, command pid));
+      loop () in
+    loop ()
+  with 
+    | End_of_file -> 
+      let _ = Unix.close_process_in ic in 
+      result
+    | e -> 
+      let _ = Unix.close_process_in ic in 
+      raise e;;
+
+let window_list_per_desktop () = 
   let result = Hashtbl.create 4 in
   begin
-    Hashtbl.iter 
-      begin
-	fun k v -> 
-	  if Hashtbl.mem result k then
-	    let l = Hashtbl.find result k in
-	    Hashtbl.replace result k
-	      begin
-	      List.merge 
-		begin
-		  fun (w1, c1) (w2, c2) -> 
-		    let x = compare c1 c2 in
-		    if x = 0 then compare w1 w2 else x
-		end
-		[v] l
-	      end
-	  else Hashtbl.add result k [v]
-      end
-      (get_windows_per_desktop ())
+    let f k v = 
+      if Hashtbl.mem result k then
+	let l = Hashtbl.find result k in
+	let l2 =
+ 	  let compare =
+	    fun (window1, command1) (window2, command2) -> 
+	      let n = compare command1 command2 in
+	      if n = 0 then compare window1 window2 else n in
+	  List.merge compare [v] l in 	
+	Hashtbl.replace result k l2
+      else Hashtbl.add result k [v] in
+    Hashtbl.iter f (windows_per_desktop ())
   end;
   result;;
 
-let get_desktop_list () =
-  List.sort
-    begin
-      let rec comparer = function
-	| [(w1, c1)], [(w2, c2)] ->
-	  let s = compare c1 c2 in
-	  if s = 0 then compare w1 w2 else s
-	| [], [] -> 0
-	| [], x -> -1
-	| x, [] -> 1
-	| (w1, c1) :: t1, (w2, c2) :: t2 -> 
-	  let s = compare c1 c2 in
-	  if s = 0 then comparer (t1, t2) else s in
-      fun (d1, l1) (d2, l2) -> comparer (l1, l2)
-    end
-    (list_of_hashtbl (get_window_list_per_desktop ()));;
+let desktop_list () =
+  let compare_desktops  (d1, l1) (d2, l2) =
+    let rec compare_window_lists = function
+      | [(w1, c1)], [(w2, c2)] ->
+	let n = compare c1 c2 in
+	if n = 0 then compare w1 w2 else n
+      | [], [] -> 0
+      | [], _ -> -1
+      | _, [] -> 1
+      | (w1, c1) :: t1, (w2, c2) :: t2 -> 
+	let n = compare c1 c2 in
+	if n = 0 then compare_window_lists (t1, t2) else n in
+    compare_window_lists (l1, l2) in 
+  List.sort compare_desktops (list_from_hashtbl (window_list_per_desktop ()));;
 
-let get_goto_lines () =
-  let cd = get_current_desktop () in
+let gotos () =
+  let cd = current_desktop () in
   let rec f = function
     | [] -> ""
     | (d, l) :: t ->
@@ -110,7 +101,7 @@ let get_goto_lines () =
       let star = if d = cd then "*" else "" in
       let ls = string_of_list snd " --- " l in
       "g " ^ ws ^ " " ^ star ^ ls ^ "\n" ^ f t in 
-  f (get_desktop_list ());;
+  f (desktop_list ());;
 
 let count_line_frequencies file_name =
   let result = Hashtbl.create 50 in
@@ -137,7 +128,7 @@ let count_line_frequencies file_name =
   end;
   result;;
 
-let get_history_lines () =
+let history () =
   string_of_list (fun s -> s) "\n"
     begin
       let l =
@@ -146,7 +137,7 @@ let get_history_lines () =
 	    List.sort 
 	      (fun (c1, f1) (c2, f2) -> compare f2 f1)
 	      begin
-		list_of_hashtbl
+		list_from_hashtbl
 		  begin
 		    count_line_frequencies 
 		      "/home/carsten/.bringerHistory"
@@ -198,8 +189,8 @@ let run_command m =
 
 let l = 
   let ic, oc = Unix.open_process "dmenu -i -l 11" in
-  output_string oc (get_goto_lines ());
-  output_string oc (get_history_lines ());
+  output_string oc (gotos ());
+  output_string oc (history ());
   begin
     let i = Unix.open_process_in "dmenu_path" in
     try
