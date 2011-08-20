@@ -122,7 +122,7 @@ let count_line_frequencies file_name =
 	    Hashtbl.add result trim 1
 	done
       with 
-	  End_of_file -> () 
+	| End_of_file -> () 
     end;
     let _ = close_in ic in ()
   end;
@@ -174,7 +174,7 @@ let run_command m =
 	  Queue.push (input_line ic) q
 	done
       with 
-	  End_of_file -> close_in ic
+	| End_of_file -> close_in ic
     end;
     begin
       let oc = open_out "/home/carsten/.bringerHistory" in
@@ -184,7 +184,7 @@ let run_command m =
 	  output_string oc (Queue.pop q ^ "\n")
 	done
       with 
-	  Queue.Empty -> close_out oc
+	| Queue.Empty -> close_out oc
     end;;
 
 let l = 
