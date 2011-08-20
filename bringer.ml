@@ -1,12 +1,8 @@
 (* #!/usr/bin/lablgtk2                                                        *)
-(* todo: weiter mit fixes bei "gotos" *)
+(* todo: weiter mit fixes bei "count_line_frequencies" *)
 
-let rec string_of_list string_of_element delimiter = function
-  | [h] -> string_of_element h
-  | h :: t -> 
-    string_of_element h ^ delimiter ^ 
-      string_of_list string_of_element delimiter t
-  | [] -> "";; 
+let string_of_list string_of_element delimiter = 
+  List.fold_left (fun s h -> s ^ delimiter ^ (string_of_element h)) "";;
 
 let list_from_hashtbl h = Hashtbl.fold (fun k v l -> (k, v) :: l) h [];;
 
@@ -90,18 +86,16 @@ let desktop_list () =
   List.sort compare_desktops (list_from_hashtbl (window_list_per_desktop ()));;
 
 let gotos () =
-  let cd = current_desktop () in
-  let rec f = function
-    | [] -> ""
-    | (d, l) :: t ->
-      let ws =
-	match l with 
-	  | [] -> "\n"
-	  | (w, c) :: t -> string_of_int w in
-      let star = if d = cd then "*" else "" in
-      let ls = string_of_list snd " --- " l in
-      "g " ^ ws ^ " " ^ star ^ ls ^ "\n" ^ f t in 
-  f (desktop_list ());;
+  let f =
+    let cd = current_desktop () in
+    fun s (d, l) ->	    
+      match l with 
+	| [] -> ""
+	| (w, c) :: _ -> 
+	  let star = if d = cd then " *" else " " in
+	  let ls = string_of_list snd " --- " l in
+	  s ^ "g " ^ (string_of_int w) ^ star ^ ls ^ "\n" in 
+  List.fold_left f "" (desktop_list ());;
 
 let count_line_frequencies file_name =
   let result = Hashtbl.create 50 in
@@ -155,9 +149,6 @@ let history () =
 	  m :: t
     end;;
 
-(* Unix.create_process m [| |] Unix.stdin  *)
-(*     Unix.stdout Unix.stderr in *)
-
 let run_command m =
   let p = Unix.fork () in
   if p = 0 then 
@@ -188,6 +179,10 @@ let run_command m =
     end;;
 
 let l = 
+  begin
+    let d = Unix.openfile "/home/carsten/.bringerHistory" [ Unix.O_CREAT ] 0o600 in
+    Unix.close d
+  end;
   let ic, oc = Unix.open_process "dmenu -i -l 11" in
   output_string oc (gotos ());
   output_string oc (history ());
