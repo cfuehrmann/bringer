@@ -17,9 +17,10 @@ let list_from_hashtbl h = Hashtbl.fold (fun k v l -> (k, v) :: l) h [];;
 let command pid =
   let ic = Unix.open_process_in (Printf.sprintf "ps -p %d -o command=" pid) in
   try
-    let line = input_line ic in 
-    let result = Str.replace_first (Str.regexp "^[^ ]*/") "" line in
-    let _ = Unix.close_process_in ic in
+    let result = 
+      let line = input_line ic in 
+      Str.replace_first (Str.regexp "^[^ ]*/") "" line
+    and _ = Unix.close_process_in ic in
     result
   with 
     | e -> 
@@ -33,8 +34,8 @@ let current_desktop () =
       Scanf.fscanf ic "%i %s %s@\n" 
 	(fun desktop marker rest ->
 	  if marker = "*" then desktop else loop ()) in
-    let result = loop () in 
-    let _ = Unix.close_process_in ic in 
+    let result = loop () 
+    and _ = Unix.close_process_in ic in 
     result
   with 
     | e -> 
@@ -42,8 +43,8 @@ let current_desktop () =
       raise e;;
 
 let windows_per_desktop () =
-  let result = Hashtbl.create 5 in
-  let ic = Unix.open_process_in "wmctrl -lp" in
+  let result = Hashtbl.create 5 
+  and ic = Unix.open_process_in "wmctrl -lp" in
   try
     let rec loop () =
       Scanf.fscanf ic "%i %i %i %s %s@\n"	   
@@ -98,12 +99,12 @@ let gotos () =
       match l with 
 	| [] -> ""
 	| (w, c) :: _ -> 
-	  let star = if d = cd then " *" else " " in
-	  let ls = string_of_list snd " --- " l in
+	  let star = if d = cd then " *" else " "
+	  and ls = string_of_list snd " --- " l in
 	  s ^ "g " ^ (string_of_int w) ^ star ^ ls ^ "\n" in 
   List.fold_left f "" (desktop_list ());;
 
-let count_line_frequencies file_name =
+let line_frequencies file_name =
   let result = Hashtbl.create 50 in
   begin  
     let ic = open_in file_name in
@@ -122,30 +123,22 @@ let count_line_frequencies file_name =
   end;
   result;;
 
-let history () = 
-  string_of_list (fun s -> s) "\n"
-    begin
-      let l =
-	List.map (function c, f -> "h " ^ c)
-	  begin
-	    List.sort 
-	      (fun (c1, f1) (c2, f2) -> compare f2 f1)
-	      begin
-		list_from_hashtbl
-		  begin
-		    count_line_frequencies 
-		      "/home/carsten/.bringerHistory"
-		  end
-	      end
-	  end in
-      match l with 
-	| [] -> []
-	| h :: t -> 
-	  let m =
-	    let time = Unix.localtime (Unix.time ()) in
-	    Printf.sprintf "%s --- %d:%.2d" h time.Unix.tm_hour time.Unix.tm_min in
-	  m :: t
-    end;;
+let history_list () = 
+  let l = 
+    list_from_hashtbl (line_frequencies "/home/carsten/.bringerHistory") in
+  List.sort (fun (c1, f1) (c2, f2) -> compare f2 f1) l;;
+     
+let history () =
+  match history_list () with
+    | [] -> ""
+    | (c, f) :: t ->
+      let rec loop s = function
+	| [] -> s
+	| (c, f) :: t -> loop (s ^ "\nh " ^ c) t
+      and s = 
+	let t = Unix.localtime (Unix.time ()) in
+	Printf.sprintf "h %s --- %d:%02d" c t.Unix.tm_hour t.Unix.tm_min in
+      loop s t;;
 
 let run_command m =
   let p = Unix.fork () in
