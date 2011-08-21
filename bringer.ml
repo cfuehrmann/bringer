@@ -1,5 +1,5 @@
 (* #!/usr/bin/lablgtk2                                                        *)
-(* todo: weiter mit fixes bei "count_line_frequencies" *)
+(* todo: weiter mit fixes bei main program *)
 
 module String = ExtLib.String;;
 module Hashtbl = ExtLib.Hashtbl;;
@@ -140,34 +140,30 @@ let history () =
 	Printf.sprintf "h %s --- %d:%02d" c t.Unix.tm_hour t.Unix.tm_min in
       loop s t;;
 
-let run_command m =
-  let p = Unix.fork () in
-  if p = 0 then 
-    begin
-      let _ = Unix.execvp "sh" [| m; "-c"; ("exec " ^ m) |] in 
-      exit (-1)
-    end
+let run_command command =
+  let pid = Unix.fork () in
+  if pid = 0 then 
+    let _ = Unix.execvp "sh" [| command; "-c"; ("exec " ^ command) |] in 
+    exit (-1)
   else
-    let q = Queue.create () in 
-    begin
+    let lines =
       let ic = open_in "/home/carsten/.bringerHistory" in
       try
-	while true do
-	  Queue.push (input_line ic) q
-	done
+	let rec loop lines =
+	  try
+	    let line = input_line ic in
+	    loop (line :: lines)
+	  with
+	    | End_of_file -> close_in ic; lines
+	in List.rev (loop [])
       with 
-	| End_of_file -> close_in ic
-    end;
-    begin
-      let oc = open_out "/home/carsten/.bringerHistory" in
-      output_string oc (m ^ "\n"); 
-      try
-	while true do
-	  output_string oc (Queue.pop q ^ "\n")
-	done
-      with 
-	| Queue.Empty -> close_out oc
-    end;;
+	| e -> close_in ic; raise e in
+    let oc = open_out "/home/carsten/.bringerHistory" in
+    try
+      output_string oc (string_of_list (fun s -> s) "\n" (command :: lines));
+      close_out oc
+    with 
+      | e -> close_out oc; raise e;;
 
 let l = 
   begin
