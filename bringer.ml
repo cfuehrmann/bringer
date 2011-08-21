@@ -1,8 +1,12 @@
 (* #!/usr/bin/lablgtk2                                                        *)
 (* todo: weiter mit fixes bei "count_line_frequencies" *)
 
-let string_of_list string_of_element delimiter = 
-  List.fold_left (fun s h -> s ^ delimiter ^ (string_of_element h)) "";;
+let rec string_of_list string_of_element delimiter = function
+  | [h] -> string_of_element h
+  | h :: t -> 
+    string_of_element h ^ delimiter ^ 
+      string_of_list string_of_element delimiter t
+  | [] -> "";; 
 
 let list_from_hashtbl h = Hashtbl.fold (fun k v l -> (k, v) :: l) h [];;
 
@@ -59,10 +63,9 @@ let window_list_per_desktop () =
       if Hashtbl.mem result k then
 	let l = Hashtbl.find result k in
 	let l2 =
- 	  let compare =
-	    fun (window1, command1) (window2, command2) -> 
-	      let n = compare command1 command2 in
-	      if n = 0 then compare window1 window2 else n in
+ 	  let compare (window1, command1) (window2, command2) =
+	    let n = compare command1 command2 in
+	    if n = 0 then compare window1 window2 else n in
 	  List.merge compare [v] l in 	
 	Hashtbl.replace result k l2
       else Hashtbl.add result k [v] in
@@ -122,7 +125,7 @@ let count_line_frequencies file_name =
   end;
   result;;
 
-let history () =
+let history () = 
   string_of_list (fun s -> s) "\n"
     begin
       let l =
@@ -143,9 +146,7 @@ let history () =
 	| h :: t -> 
 	  let m =
 	    let time = Unix.localtime (Unix.time ()) in
-	    h ^ " --- " ^ 
-	      string_of_int time.Unix.tm_hour ^ ":" ^ 
-	      string_of_int time.Unix.tm_min in
+	    Printf.sprintf "%s --- %d:%.2d" h time.Unix.tm_hour time.Unix.tm_min in
 	  m :: t
     end;;
 
