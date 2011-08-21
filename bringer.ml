@@ -1,6 +1,9 @@
 (* #!/usr/bin/lablgtk2                                                        *)
 (* todo: weiter mit fixes bei "count_line_frequencies" *)
 
+module String = ExtLib.String;;
+module Hashtbl = ExtLib.Hashtbl;;
+
 let rec string_of_list string_of_element delimiter = function
   | [h] -> string_of_element h
   | h :: t -> 
@@ -104,24 +107,18 @@ let count_line_frequencies file_name =
   let result = Hashtbl.create 50 in
   begin  
     let ic = open_in file_name in
-    begin
-      try
-	while true do
-	  let trim =
-	    begin
-	      Str.global_replace 
-		(Str.regexp "[ \t]+$") "" (input_line ic)
-	    end in
-	  if Hashtbl.mem result trim then
-	    let count = Hashtbl.find result trim in
-	    Hashtbl.replace result trim (count + 1)
-	  else
-	    Hashtbl.add result trim 1
-	done
-      with 
-	| End_of_file -> () 
-    end;
-    let _ = close_in ic in ()
+    try
+      while true do
+	let line = 
+	  let l = input_line ic in
+	  String.strip l in
+	match Hashtbl.find_option result line with
+	  | Some count -> Hashtbl.replace result line (count + 1)
+	  | None -> Hashtbl.add result line 1
+      done
+    with 
+	| End_of_file -> close_in ic
+	| e -> close_in ic; raise e
   end;
   result;;
 
