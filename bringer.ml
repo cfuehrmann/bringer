@@ -1,5 +1,5 @@
 (* #!/usr/bin/lablgtk2                                                        *)
-(* todo: faster version of "command"; more consistent naming; automatic 
+(* todo: automatic 
 determination of home directory; improve bird's eye view structure;
 unit tests? *)
 
@@ -13,9 +13,8 @@ let rec string_of_list string_of_element delimiter = function
       string_of_list string_of_element delimiter t
   | [] -> "";; 
 
-let list_from_hashtbl h = Hashtbl.fold (fun k v l -> (k, v) :: l) h [];;
+let list_from_hashtbl tbl = Hashtbl.fold (fun k v l -> (k, v) :: l) tbl [];;
 
-(* todo: for performance, use ps -Ao pid,command *) 
 let command pid =
   let ic = Unix.open_process_in (Printf.sprintf "ps -p %d -o command=" pid) in
   try
@@ -66,15 +65,15 @@ let window_list_per_desktop () =
   let result = Hashtbl.create 4 in
   begin
     let f k v = 
-      if Hashtbl.mem result k then
-	let l = Hashtbl.find result k in
-	let l2 =
- 	  let compare (window1, command1) (window2, command2) =
-	    let n = compare command1 command2 in
-	    if n = 0 then compare window1 window2 else n in
-	  List.merge compare [v] l in 	
-	Hashtbl.replace result k l2
-      else Hashtbl.add result k [v] in
+      match Hashtbl.find_option result k with
+	| Some l -> 
+	  let l =
+ 	    let compare (window1, command1) (window2, command2) =
+	      let n = compare command1 command2 in
+	      if n = 0 then compare window1 window2 else n in
+	    List.merge compare [v] l in 	
+	  Hashtbl.replace result k l
+	| None -> Hashtbl.add result k [v] in
     Hashtbl.iter f (windows_per_desktop ())
   end;
   result;;
@@ -102,8 +101,8 @@ let gotos () =
 	| [] -> ""
 	| (w, c) :: _ -> 
 	  let star = if d = cd then " *" else " "
-	  and ls = string_of_list snd " --- " l in
-	  s ^ "g " ^ (string_of_int w) ^ star ^ ls ^ "\n" in 
+	  and description = string_of_list snd " --- " l in
+	  s ^ "g " ^ string_of_int w ^ star ^ description ^ "\n" in 
   List.fold_left f "" (desktop_list ());;
 
 let line_frequencies file_name =
@@ -113,23 +112,26 @@ let line_frequencies file_name =
     try
       while true do
 	let line = 
-	  let l = input_line ic in
-	  String.strip l in
+	  let line = input_line ic in
+	  String.strip line in
 	match Hashtbl.find_option result line with
 	  | Some count -> Hashtbl.replace result line (count + 1)
 	  | None -> Hashtbl.add result line 1
       done
     with 
-	| End_of_file -> close_in ic
-	| e -> close_in ic; raise e
+      | End_of_file -> close_in ic
+      | e -> close_in ic; raise e
   end;
   result;;
 
 let history_list () = 
   let l = 
     list_from_hashtbl (line_frequencies "/home/carsten/.bringerHistory") in
-  List.sort (fun (c1, f1) (c2, f2) -> compare f2 f1) l;;
-     
+  let compare (c1, f1) (c2, f2) = 
+    let n = compare f2 f1 in
+    if n = 0 then compare c1 c2 else n in
+  List.sort compare l;;
+
 let history () =
   match history_list () with
     | [] -> ""
@@ -168,16 +170,14 @@ let run_command command =
       | e -> close_out oc; raise e;;
 
 let time f x =
-let t = Sys.time() in
-let f_x = f x in
-Printf.printf "Took %fs\n" (Sys.time() -. t);
-f_x;;
-
-(* time gotos ();; *)
+  let t = Sys.time() in
+  let result = f x in
+  Printf.printf "Took %fs\n" (Sys.time() -. t);
+  result;;
 
 begin
-  let d = Unix.openfile "/home/carsten/.bringerHistory" [ Unix.O_CREAT ] 0o600 in
-  Unix.close d
+  let fd = Unix.openfile "/home/carsten/.bringerHistory" [ Unix.O_CREAT ] 0o600 in
+  Unix.close fd
 end;
 try
   let user_input =
