@@ -1,6 +1,7 @@
 (* #!/usr/bin/lablgtk2                                                        *)
 (* todo: faster version of "command"; more consistent naming; automatic 
-determination of home directory; improve bird's eye view structure *)
+determination of home directory; improve bird's eye view structure;
+unit tests? *)
 
 module String = ExtLib.String;;
 module Hashtbl = ExtLib.Hashtbl;;
@@ -166,52 +167,58 @@ let run_command command =
     with 
       | e -> close_out oc; raise e;;
 
+let time f x =
+let t = Sys.time() in
+let f_x = f x in
+Printf.printf "Took %fs\n" (Sys.time() -. t);
+f_x;;
+
+(* time gotos ();; *)
+
 begin
   let d = Unix.openfile "/home/carsten/.bringerHistory" [ Unix.O_CREAT ] 0o600 in
   Unix.close d
 end;
 try
-  begin 
-    let user_input =
-      let ic, oc = Unix.open_process "dmenu -i -l 11" in
-      try
-	output_string oc (gotos ());
-	output_string oc (history ());
-	begin
-	  let ic = Unix.open_process_in "dmenu_path" in
-	  try
-	    while true do
-	      let line = input_line ic in
-	      output_string oc ("\n" ^ line)
-	    done
-	  with 
-	    | End_of_file -> 
-	      let _ = Unix.close_process_in ic in 
-	      ()
-	    | e -> 
-	      let _ = Unix.close_process_in ic in 
-	      raise e
-	end;
-	close_out oc;
-	let input = input_line ic 
-	and _ = Unix.close_process (ic, oc) in
-	input 
-      with
-	| e -> 
-	  let _ = Unix.close_process (ic, oc) in 
-	  raise e in 
-    if Str.string_match (Str.regexp "^g \\([0-9]+\\) .*") user_input 0 then
-      let _ = 
-	Sys.command ("wmctrl -ia" ^ (Str.matched_group 1 user_input)) in 
-      () 
-    else  
-      let command =
-	if Str.string_match (Str.regexp "^h \\(.*\\)---.*") user_input 0 then 
-	  Str.matched_group 1 user_input
-	else if Str.string_match (Str.regexp "^h \\(.*\\)") user_input 0 then 
-	  Str.matched_group 1 user_input
-	else user_input in
-      run_command command
-  end
+  let user_input =
+    let ic, oc = Unix.open_process "dmenu -i -l 11" in
+    try
+      output_string oc (gotos ());
+      output_string oc (history ());
+      begin
+	let ic = Unix.open_process_in "dmenu_path" in
+	try
+	  while true do
+	    let line = input_line ic in
+	    output_string oc ("\n" ^ line)
+	  done
+	with 
+	  | End_of_file -> 
+	    let _ = Unix.close_process_in ic in 
+	    ()
+	  | e -> 
+	    let _ = Unix.close_process_in ic in 
+	    raise e
+      end;
+      close_out oc;
+      let input = input_line ic 
+      and _ = Unix.close_process (ic, oc) in
+      input 
+    with
+      | e -> 
+	let _ = Unix.close_process (ic, oc) in 
+	raise e in 
+  if Str.string_match (Str.regexp "^g \\([0-9]+\\) .*") user_input 0 then
+    let _ = 
+      Sys.command ("wmctrl -ia" ^ (Str.matched_group 1 user_input)) in 
+    () 
+  else  
+    let command =
+      if Str.string_match (Str.regexp "^h \\(.*\\)---.*") user_input 0 then 
+	Str.matched_group 1 user_input
+      else if Str.string_match (Str.regexp "^h \\(.*\\)") user_input 0 then 
+	Str.matched_group 1 user_input
+      else user_input in
+    run_command command
 with 
   | End_of_file -> ();;
