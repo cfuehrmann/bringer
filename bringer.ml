@@ -156,7 +156,8 @@ let history history_file =
 	| (c, f) :: t -> loop (s ^ "\n" ^ c) t
       and s = 
 	let t = Unix.localtime (Unix.time ()) in
-	Printf.sprintf "%s --- %d:%02d" c t.Unix.tm_hour t.Unix.tm_min in
+	let dashes = String.make (73 - String.length c) '-' in 
+	Printf.sprintf "%s %s %d:%02d" c dashes t.Unix.tm_hour t.Unix.tm_min in
       loop s t;;
 
 let run_command command history_file =
@@ -197,7 +198,7 @@ begin
 end;
 try
   let user_input =
-    let ic, oc = Unix.open_process "dmenu -i -l 11" in
+    let ic, oc = Unix.open_process "dmenu -i -l 13" in
     try
       output_string oc (gotos ());
       output_string oc (history history_file);
@@ -232,7 +233,7 @@ try
   else if Str.string_match (Str.regexp "^-*$") user_input 0 then ()
   else  
     let command =
-      if Str.string_match (Str.regexp "^\\(.*\\)---.*$") user_input 0 then 
+      if Str.string_match (Str.regexp "^\\(.*\\)[ ]----*.*$") user_input 0 then 
 	Str.matched_group 1 user_input
       else user_input in
     run_command command history_file
