@@ -1,6 +1,6 @@
 (* #!/usr/bin/lablgtk2                                                        *)
 (* todo: improve bird's eye view structure;
-unit tests? desktop numbers instead of window numbers; most recent als Feinordung der history *)
+unit tests? desktop numbers instead of window numbers *)
 
 module String = ExtLib.String;;
 module Hashtbl = ExtLib.Hashtbl;;
@@ -122,14 +122,17 @@ let line_frequencies file_name =
   begin  
     let ic = open_in file_name in
     try
-      while true do
-	let line = 
-	  let line = input_line ic in
-	  String.strip line in
-	match Hashtbl.find_option result line with
-	  | Some count -> Hashtbl.replace result line (count + 1)
-	  | None -> Hashtbl.add result line 1
-      done
+      let rec loop i =
+	begin
+	  let line = 
+	    let line = input_line ic in
+	    String.strip line in
+	  match Hashtbl.find_option result line with
+	    | Some (count, most_recent) -> Hashtbl.replace result line (count + 1, most_recent)
+	    | None -> Hashtbl.add result line (1, i)
+	end;
+	loop (i + 1)
+      in loop 0
     with 
       | End_of_file -> close_in ic
       | e -> close_in ic; raise e
@@ -139,9 +142,9 @@ let line_frequencies file_name =
 let history_list history_file = 
   let l = 
     list_from_hashtbl (line_frequencies history_file) in
-  let compare (c1, f1) (c2, f2) = 
+  let compare (c1, (f1, mr1)) (c2, (f2, mr2)) = 
     let n = compare f2 f1 in
-    if n = 0 then compare c1 c2 else n in
+    if n = 0 then compare mr1 mr2 else n in
   List.sort compare l;;
 
 let history history_file =
