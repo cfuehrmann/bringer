@@ -1,7 +1,6 @@
 (* #!/usr/bin/lablgtk2                                                        *)
-(* todo: automatic 
-determination of home directory; improve bird's eye view structure;
-unit tests? *)
+(* todo: improve bird's eye view structure;
+unit tests? desktop numbers instead of window numbers; most recent als Feinordung der history *)
 
 module String = ExtLib.String;;
 module Hashtbl = ExtLib.Hashtbl;;
@@ -21,6 +20,19 @@ let command pid =
     let result = 
       let line = input_line ic in 
       Str.replace_first (Str.regexp "^[^ ]*/") "" line
+    and _ = Unix.close_process_in ic in
+    result
+  with 
+    | e -> 
+      let _ = Unix.close_process_in ic in 
+      raise e;;
+                          
+let home () =
+  let ic = Unix.open_process_in "echo ~"  in
+  try
+    let result = 
+      let line = input_line ic in 
+      line
     and _ = Unix.close_process_in ic in
     result
   with 
@@ -124,16 +136,16 @@ let line_frequencies file_name =
   end;
   result;;
 
-let history_list () = 
+let history_list history_file = 
   let l = 
-    list_from_hashtbl (line_frequencies "/home/carsten/.bringerHistory") in
+    list_from_hashtbl (line_frequencies history_file) in
   let compare (c1, f1) (c2, f2) = 
     let n = compare f2 f1 in
     if n = 0 then compare c1 c2 else n in
   List.sort compare l;;
 
-let history () =
-  match history_list () with
+let history history_file =
+  match history_list history_file with
     | [] -> ""
     | (c, f) :: t ->
       let rec loop s = function
@@ -144,14 +156,14 @@ let history () =
 	Printf.sprintf "h %s --- %d:%02d" c t.Unix.tm_hour t.Unix.tm_min in
       loop s t;;
 
-let run_command command =
+let run_command command history_file =
   let pid = Unix.fork () in
   if pid = 0 then 
     let _ = Unix.execvp "sh" [| command; "-c"; ("exec " ^ command) |] in 
     exit (-1)
   else
     let lines =
-      let ic = open_in "/home/carsten/.bringerHistory" in
+      let ic = open_in history_file in
       try
 	let rec loop lines =
 	  try
@@ -162,7 +174,7 @@ let run_command command =
 	in List.rev (loop [])
       with 
 	| e -> close_in ic; raise e in
-    let oc = open_out "/home/carsten/.bringerHistory" in
+    let oc = open_out history_file in
     try
       output_string oc (string_of_list (fun s -> s) "\n" (command :: lines));
       close_out oc
@@ -175,8 +187,9 @@ let time f x =
   Printf.printf "Took %fs\n" (Sys.time() -. t);
   result;;
 
+let history_file = home () ^ "/" ^ ".bringerHistory" in
 begin
-  let fd = Unix.openfile "/home/carsten/.bringerHistory" [ Unix.O_CREAT ] 0o600 in
+  let fd = Unix.openfile history_file [ Unix.O_CREAT ] 0o600 in
   Unix.close fd
 end;
 try
@@ -184,7 +197,7 @@ try
     let ic, oc = Unix.open_process "dmenu -i -l 11" in
     try
       output_string oc (gotos ());
-      output_string oc (history ());
+      output_string oc (history history_file);
       begin
 	let ic = Unix.open_process_in "dmenu_path" in
 	try
@@ -219,6 +232,6 @@ try
       else if Str.string_match (Str.regexp "^h \\(.*\\)") user_input 0 then 
 	Str.matched_group 1 user_input
       else user_input in
-    run_command command
+    run_command command history_file
 with 
   | End_of_file -> ();;
