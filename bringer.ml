@@ -114,7 +114,7 @@ let gotos () =
 	| (w, c) :: _ -> 
 	  let star = if d = cd then " *" else " "
 	  and description = string_of_list snd " --- " l in
-	  s ^ "g " ^ string_of_int w ^ star ^ description ^ "\n" in 
+	  s ^ "desktop" ^ string_of_int d ^ star ^ description ^ "\n" in 
   List.fold_left f "" (desktop_list ());;
 
 let line_frequencies file_name =
@@ -153,10 +153,10 @@ let history history_file =
     | (c, f) :: t ->
       let rec loop s = function
 	| [] -> s
-	| (c, f) :: t -> loop (s ^ "\nh " ^ c) t
+	| (c, f) :: t -> loop (s ^ "\n" ^ c) t
       and s = 
 	let t = Unix.localtime (Unix.time ()) in
-	Printf.sprintf "h %s --- %d:%02d" c t.Unix.tm_hour t.Unix.tm_min in
+	Printf.sprintf "%s --- %d:%02d" c t.Unix.tm_hour t.Unix.tm_min in
       loop s t;;
 
 let run_command command history_file =
@@ -201,6 +201,7 @@ try
     try
       output_string oc (gotos ());
       output_string oc (history history_file);
+      output_string oc ("\n" ^ String.make 80 '-' );
       begin
 	let ic = Unix.open_process_in "dmenu_path" in
 	try
@@ -224,15 +225,14 @@ try
       | e -> 
 	let _ = Unix.close_process (ic, oc) in 
 	raise e in 
-  if Str.string_match (Str.regexp "^g \\([0-9]+\\) .*") user_input 0 then
+  if Str.string_match (Str.regexp "^desktop\\([0-9]+\\) .*") user_input 0 then
     let _ = 
-      Sys.command ("wmctrl -ia" ^ (Str.matched_group 1 user_input)) in 
+      Sys.command ("wmctrl -s" ^ (Str.matched_group 1 user_input)) in 
     () 
+  else if Str.string_match (Str.regexp "^-*$") user_input 0 then ()
   else  
     let command =
-      if Str.string_match (Str.regexp "^h \\(.*\\)---.*") user_input 0 then 
-	Str.matched_group 1 user_input
-      else if Str.string_match (Str.regexp "^h \\(.*\\)") user_input 0 then 
+      if Str.string_match (Str.regexp "^\\(.*\\)---.*$") user_input 0 then 
 	Str.matched_group 1 user_input
       else user_input in
     run_command command history_file
