@@ -1,18 +1,10 @@
 (* #!/usr/bin/lablgtk2                                                        *)
 (* todo: improve bird's eye view structure;
-unit tests? desktop numbers instead of window numbers *)
+unit tests? *)
 
 module String = ExtLib.String;;
 module Hashtbl = ExtLib.Hashtbl;;
-
-let rec string_of_list string_of_element delimiter = function
-  | [h] -> string_of_element h
-  | h :: t -> 
-    string_of_element h ^ delimiter ^ 
-      string_of_list string_of_element delimiter t
-  | [] -> "";; 
-
-let list_from_hashtbl tbl = Hashtbl.fold (fun k v l -> (k, v) :: l) tbl [];;
+open ListUtil;;
 
 let command pid =
   let ic = Unix.open_process_in (Printf.sprintf "ps -p %d -o command=" pid) in
