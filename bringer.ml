@@ -1,5 +1,4 @@
-(* #!/usr/bin/lablgtk2 todo: improve bird's eye view structure; unit       *)
-(* tests?                                                                  *)
+(* #!/usr/bin/lablgtk2 todo: unit tests? github + co? gtk? *)
 
 module String = ExtLib.String
 module Hashtbl = ExtLib.Hashtbl
