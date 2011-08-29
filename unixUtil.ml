@@ -7,9 +7,9 @@ let command pid =
 		and _ = Unix.close_process_in ic in
 		result
 	with
-	| e ->
+	| End_of_file ->
 			let _ = Unix.close_process_in ic in
-			raise e
+			raise Not_found
 
 let home () =
 	let ic = Unix.open_process_in "echo ~" in

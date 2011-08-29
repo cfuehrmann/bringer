@@ -1,4 +1,5 @@
-(* #!/usr/bin/lablgtk2 todo: unit tests? github + co? gtk? *)
+(* #!/usr/bin/lablgtk2 todo: unit tests? github + co? gtk? proper          *)
+(* treatment of over-long window descriptions                              *)
 
 module String = ExtLib.String
 module Hashtbl = ExtLib.Hashtbl
