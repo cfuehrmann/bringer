@@ -28,6 +28,7 @@ let description_of_window (windowId, command, host, title) =
 		| "urxvt" -> "urxvt: " ^ title
 		| "chrome" -> "chrome: " ^ title
 		| "java" -> "java: " ^ title
+		| "python2.7" -> "python2.7: " ^ title
 		| _ -> command
 	else command
 
