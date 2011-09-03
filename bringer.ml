@@ -1,10 +1,8 @@
-(* #!/usr/bin/lablgtk2 *)
-(* todos:  zum thema unit tests: durch    *)
-(* die intensive eigennutzung ist viel abgedeckt; was fehlt, ist (1) der   *)
-(* test anderer systemkonfigurationen (fehlendes wmctrl, andere            *)
-(* bildschirmgröße, dateirechte, etc., und (2) nicht ganz so               *)
-(* offensichtliche merkmale wie die sortierung der desktops und der        *)
-(* history github + co? gtk?                                               *)
+(* #!/usr/bin/lablgtk2 todos: zum thema unit tests: durch die intensive    *)
+(* eigennutzung ist viel abgedeckt; was fehlt, ist (1) der test anderer    *)
+(* systemkonfigurationen (fehlendes wmctrl, andere bildschirmgröße,        *)
+(* dateirechte, etc., und (2) nicht ganz so offensichtliche merkmale wie   *)
+(* die sortierung der desktops und der history github + co? gtk?           *)
 
 module String = ExtLib.String
 module Hashtbl = ExtLib.Hashtbl
@@ -52,10 +50,7 @@ let history_lines =
 			let rec loop s = function
 				| [] -> s
 				| (c, f) :: t -> loop (s ^ "\n" ^ c) t
-			and s =
-				let t = Unix.localtime (Unix.time ()) in
-				let dashes = "*****" in
-				Printf.sprintf "%s %s %d:%02d" c dashes t.Unix.tm_hour t.Unix.tm_min in
+			and s = Printf.sprintf "%s %s %s" c "*****" (date "+'%a%e, %H:%M'") in
 			loop s t
 
 let exec_with_history command =
