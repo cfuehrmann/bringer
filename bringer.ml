@@ -1,10 +1,10 @@
-(* #!/usr/bin/lablgtk2 *)
-(* todos: function on "wmctrl -l" line to determine how the description is made *)
-(* descriptions zum thema unit tests: durch die intensive eigennutzung ist *)
-(* viel abgedeckt; was fehlt, ist (1) der test anderer                     *)
-(* systemkonfigurationen (fehlendes wmctrl, andere bildschirmgröße,        *)
-(* dateirechte, etc., und (2) nicht ganz so offensichtliche merkmale wie   *)
-(* die sortierung der desktops und der history github + co? gtk?           *)
+(* #!/usr/bin/lablgtk2 todos: function on "wmctrl -l" line to determine    *)
+(* how the description is made descriptions zum thema unit tests: durch    *)
+(* die intensive eigennutzung ist viel abgedeckt; was fehlt, ist (1) der   *)
+(* test anderer systemkonfigurationen (fehlendes wmctrl, andere            *)
+(* bildschirmgröße, dateirechte, etc., und (2) nicht ganz so               *)
+(* offensichtliche merkmale wie die sortierung der desktops und der        *)
+(* history github + co? gtk?                                               *)
 
 module String = ExtLib.String
 module Hashtbl = ExtLib.Hashtbl
@@ -15,15 +15,30 @@ open SysUtil
 
 let history_file = home () ^ "/" ^ ".bringerHistory"
 
+let description_width = 35
+
+let description_of_window (windowId, command, host, title) =
+	if Str.string_match (Str.regexp "^\\([^ ]*\\).*$") command 0 then
+		match	Str.matched_group 1 command with
+		| "urxvt" -> "urxvt: " ^ title
+		| "chrome" -> "chrome: " ^ title
+		| "java" -> "java:" ^ title
+		| _ -> command
+	else command
+
 let desktop_lines =
 	let f =
 		let cd = current_desktop () in
 		fun s (d, l) ->
 				let star = if d = cd then "*" else " " in
 				let description =
-					let string_of_element (w, c) =
-						let l = String.length c in
-						if l < 30 then c ^ String.make (30 - l) ' ' else Str.string_before c 27 ^ "..." in
+					let string_of_element (w, c, h, t) =
+						let description = description_of_window (w, c, h, t) in
+						let l = String.length description in
+						if l < description_width then
+							description ^ String.make (description_width - l) ' '
+						else
+							Str.string_before description (description_width - 3) ^ "..." in
 					string_of_list string_of_element " | " l in
 				s ^ "desktop" ^ string_of_int d ^ star ^ description ^ " |\n" in
 	List.fold_left f "" (desktop_list ())
