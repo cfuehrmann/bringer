@@ -26,13 +26,9 @@ let desktop_lines =
 	let f =
 		let cd = current_desktop () in
 		fun s (d, l) ->
-				let star = if d = cd then "*" else " " in
-				let description =
-					let string_of_element (w, c, h, t) =
-						let description = description_of_window (w, c, h, t) in
-						description in
-					string_of_list string_of_element " ----- " l in
-				s ^ "desktop" ^ string_of_int d ^ star ^ description ^ "\n" in
+				let star = if d = cd then "*" else " "
+				and description = string_of_list description_of_window " ----- " l in
+				s ^ star ^ string_of_int d ^ " " ^ description ^ "\n" in
 	List.fold_left f "" (desktop_list ())
 
 let history_list =
@@ -93,7 +89,7 @@ let _ =
 			| e ->
 					let _ = Unix.close_process (ic, oc) in
 					raise e in
-		if Str.string_match (Str.regexp "^desktop\\([0-9]+\\).*") user_input 0 then
+		if Str.string_match (Str.regexp "^[^0-9]*\\([0-9]+\\).*") user_input 0 then
 			let _ =
 				Sys.command ("wmctrl -s" ^ (Str.matched_group 1 user_input)) in
 			()
