@@ -1,5 +1,5 @@
-(* #!/usr/bin/lablgtk2 todos: function on "wmctrl -l" line to determine    *)
-(* how the description is made descriptions zum thema unit tests: durch    *)
+(* #!/usr/bin/lablgtk2 *)
+(* todos:  zum thema unit tests: durch    *)
 (* die intensive eigennutzung ist viel abgedeckt; was fehlt, ist (1) der   *)
 (* test anderer systemkonfigurationen (fehlendes wmctrl, andere            *)
 (* bildschirmgröße, dateirechte, etc., und (2) nicht ganz so               *)
@@ -15,14 +15,12 @@ open SysUtil
 
 let history_file = home () ^ "/" ^ ".bringerHistory"
 
-let description_width = 35
-
 let description_of_window (windowId, command, host, title) =
 	if Str.string_match (Str.regexp "^\\([^ ]*\\).*$") command 0 then
 		match	Str.matched_group 1 command with
 		| "urxvt" -> "urxvt: " ^ title
 		| "chrome" -> "chrome: " ^ title
-		| "java" -> "java:" ^ title
+		| "java" -> "java: " ^ title
 		| _ -> command
 	else command
 
@@ -34,13 +32,9 @@ let desktop_lines =
 				let description =
 					let string_of_element (w, c, h, t) =
 						let description = description_of_window (w, c, h, t) in
-						let l = String.length description in
-						if l < description_width then
-							description ^ String.make (description_width - l) ' '
-						else
-							Str.string_before description (description_width - 3) ^ "..." in
-					string_of_list string_of_element " | " l in
-				s ^ "desktop" ^ string_of_int d ^ star ^ description ^ " |\n" in
+						description in
+					string_of_list string_of_element " ----- " l in
+				s ^ "desktop" ^ string_of_int d ^ star ^ description ^ "\n" in
 	List.fold_left f "" (desktop_list ())
 
 let history_list =
@@ -60,7 +54,7 @@ let history_lines =
 				| (c, f) :: t -> loop (s ^ "\n" ^ c) t
 			and s =
 				let t = Unix.localtime (Unix.time ()) in
-				let dashes = String.make (73 - String.length c) '-' in
+				let dashes = "*****" in
 				Printf.sprintf "%s %s %d:%02d" c dashes t.Unix.tm_hour t.Unix.tm_min in
 			loop s t
 
@@ -111,7 +105,7 @@ let _ =
 		else if Str.string_match (Str.regexp "^-*$") user_input 0 then ()
 		else
 			let command =
-				if Str.string_match (Str.regexp "^\\(.*\\)[ ]----*.*$") user_input 0 then
+				if Str.string_match (Str.regexp "^\\(.*\\)[ ]\\*\\*\\*\\*\\**.*$") user_input 0 then
 					Str.matched_group 1 user_input
 				else user_input in
 			exec_with_history command
