@@ -71,7 +71,8 @@ let _ =
 					try
 						while true do
 							let line = input_line ic in
-							output_string oc ("\n" ^ line)
+							let is_in_history = List.mem line (List.map fst history_list) in
+							if is_in_history then () else output_string oc ("\n" ^ line)
 						done
 					with
 					| End_of_file ->
