@@ -1,5 +1,10 @@
-(* #!/usr/bin/lablgtk2 todo: unit tests? github + co? gtk? proper          *)
-(* treatment of over-long window descriptions                              *)
+(* #!/usr/bin/lablgtk2 *)
+(* todos: function on "wmctrl -l" line to determine how the description is made *)
+(* descriptions zum thema unit tests: durch die intensive eigennutzung ist *)
+(* viel abgedeckt; was fehlt, ist (1) der test anderer                     *)
+(* systemkonfigurationen (fehlendes wmctrl, andere bildschirmgröße,        *)
+(* dateirechte, etc., und (2) nicht ganz so offensichtliche merkmale wie   *)
+(* die sortierung der desktops und der history github + co? gtk?           *)
 
 module String = ExtLib.String
 module Hashtbl = ExtLib.Hashtbl
@@ -14,12 +19,13 @@ let desktop_lines =
 	let f =
 		let cd = current_desktop () in
 		fun s (d, l) ->
-				match l with
-				| [] -> ""
-				| (w, c) :: _ ->
-						let star = if d = cd then " *" else " "
-						and description = string_of_list snd " --- " l in
-						s ^ "desktop" ^ string_of_int d ^ star ^ description ^ "\n" in
+				let star = if d = cd then "*" else " " in
+				let description =
+					let string_of_element (w, c) =
+						let l = String.length c in
+						if l < 30 then c ^ String.make (30 - l) ' ' else Str.string_before c 27 ^ "..." in
+					string_of_list string_of_element " | " l in
+				s ^ "desktop" ^ string_of_int d ^ star ^ description ^ " |\n" in
 	List.fold_left f "" (desktop_list ())
 
 let history_list =
@@ -83,7 +89,7 @@ let _ =
 			| e ->
 					let _ = Unix.close_process (ic, oc) in
 					raise e in
-		if Str.string_match (Str.regexp "^desktop\\([0-9]+\\) .*") user_input 0 then
+		if Str.string_match (Str.regexp "^desktop\\([0-9]+\\).*") user_input 0 then
 			let _ =
 				Sys.command ("wmctrl -s" ^ (Str.matched_group 1 user_input)) in
 			()

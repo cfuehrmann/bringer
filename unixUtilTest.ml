@@ -14,9 +14,9 @@ let max_pid () =
 			close_in ic;
 			raise e
 
-let pid_not_found () = assert_raises Not_found (fun () -> UnixUtil.command (max_pid () + 1))
+let pid_not_found () =
+	assert_raises Not_found (fun () -> UnixUtil.command (max_pid () + 1))
 
-(* Name the test cases and group them together *)
 let suite =
 	"suite" >:::
 	["pid_not_found" >:: pid_not_found;
