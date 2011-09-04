@@ -1,42 +1,28 @@
-let command pid =
-	let ic = Unix.open_process_in (Printf.sprintf "ps -p %d -o command=" pid) in
+let with_command_in command f =
+	let ic = Unix.open_process_in command in
 	try
-		let result =
-			let line = input_line ic in
-			Str.replace_first (Str.regexp "^[^ ]*/") "" line
-		and _ = Unix.close_process_in ic in
-		result
-	with
-	| End_of_file ->
-			let _ = Unix.close_process_in ic in
-			raise Not_found
-
-let home () =
-	let ic = Unix.open_process_in "echo ~" in
-	try
-		let result =
-			let line = input_line ic in
-			line
+		let result = f ic
 		and _ = Unix.close_process_in ic in
 		result
 	with
 	| e ->
 			let _ = Unix.close_process_in ic in
 			raise e
+
+let command pid =
+	let c = Printf.sprintf "ps -p %d -o command=" pid
+	and f ic =
+		let line = input_line ic in
+		Str.replace_first (Str.regexp "^[^ ]*/") "" line in
+	try
+		with_command_in c f
+	with
+	| End_of_file -> raise Not_found
+
+let home () = with_command_in "echo ~" input_line
+
+let date format = with_command_in ("date " ^ format) input_line
 
 let touch mod_mask file_name =
-	let fd = Unix.openfile file_name [ Unix.O_CREAT ] mod_mask in
-	Unix.close fd
-
-let date format =
-	let ic = Unix.open_process_in ("date " ^ format) in
-	try
-		let result =
-			let line = input_line ic in
-			line
-		and _ = Unix.close_process_in ic in
-		result
-	with
-	| e ->
-			let _ = Unix.close_process_in ic in
-			raise e
+    let fd = Unix.openfile file_name [ Unix.O_CREAT ] mod_mask in
+    Unix.close fd

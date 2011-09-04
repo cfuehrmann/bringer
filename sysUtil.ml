@@ -13,7 +13,8 @@ let line_frequencies file_name =
 						let line = input_line ic in
 						String.strip line in
 					match Hashtbl.find_option result line with
-					| Some (count, most_recent) -> Hashtbl.replace result line (count + 1, most_recent)
+					| Some (count, most_recent) -> 
+						Hashtbl.replace result line (count + 1, most_recent)
 					| None -> Hashtbl.add result line (1, i)
 				end;
 				loop (i + 1)

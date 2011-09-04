@@ -93,7 +93,8 @@ let _ =
 		else if Str.string_match (Str.regexp "^-*$") user_input 0 then ()
 		else
 			let command =
-				if Str.string_match (Str.regexp "^\\(.*\\)[ ]\\*\\*\\*\\*\\**.*$") user_input 0 then
+				let r = Str.regexp "^\\(.*\\)[ ]\\*\\*\\*\\*\\**.*$" in
+				if Str.string_match r user_input 0 then
 					Str.matched_group 1 user_input
 				else user_input in
 			exec_with_history command

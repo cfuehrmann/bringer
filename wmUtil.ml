@@ -3,37 +3,27 @@ open UnixUtil
 open ListUtil
 
 let current_desktop () =
-	let ic = Unix.open_process_in "wmctrl -d" in
-	try
+	let f ic =
 		let rec loop () =
 			Scanf.fscanf ic "%i %s %s@\n"
 				(fun desktop marker rest ->
 							if marker = "*" then desktop else loop ()) in
-		let result = loop ()
-		and _ = Unix.close_process_in ic in
-		result
-	with
-	| e ->
-			let _ = Unix.close_process_in ic in
-			raise e
+		loop () in
+	with_command_in "wmctrl -d" f
 
 let windows_per_desktop () =
-	let result = Hashtbl.create 5
-	and ic = Unix.open_process_in "wmctrl -lp" in
-	try
+	let result = Hashtbl.create 5 in
+	let f ic =
 		let rec loop () =
 			Scanf.fscanf ic "%i %i %i %s %s@\n"
 				(fun window desktop pid host title ->
 							Hashtbl.add result desktop (window, command pid, host, title));
 			loop () in
-		loop ()
+		loop () in
+	try
+		with_command_in "wmctrl -lp" f
 	with
-	| End_of_file ->
-			let _ = Unix.close_process_in ic in
-			result
-	| e ->
-			let _ = Unix.close_process_in ic in
-			raise e
+	| End_of_file -> result
 
 let window_list_per_desktop () =
 	let result = Hashtbl.create 4 in
@@ -42,7 +32,8 @@ let window_list_per_desktop () =
 			match Hashtbl.find_option result k with
 			| Some l ->
 					let l =
-						let compare (window1, command1, host1, title1) (window2, command2, host2, title2) =
+						let compare (window1, command1, host1, title1)
+								(window2, command2, host2, title2) =
 							let n = compare command1 command2 in
 							if n = 0 then compare window1 window2 else n in
 						List.merge compare [v] l in
