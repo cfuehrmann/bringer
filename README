@@ -1,0 +1,64 @@
+Original motivation
+------------------- 
+
+When using Linux, I use xmonad with dmenu and gmrun to launch
+programs, and tint2 to switch between desktops. Dmenu is very slick
+but has no command history. Gmrun is slightly unwieldier, but has a
+command history, which is searchable. I wanted all three utilities in
+one, without using up any screen space. The result is bringer: besides
+the usual searchable commands provided by dmenu, it provides a list of
+the non-empty desktops, as well as a command history, ordered my "most
+frequently used". Desktops, commands, and history are presented via
+dmenu: desktops at the top, the history below that, and finally the
+available commands.
+
+
+Current state
+-------------
+
+So far, bringer is optimized for tiling window managers, because the
+switching is between desktops, not between windows. However, the goal
+is to provide a maximally-useful launcher/switcher that works equally
+well with any window manager. Changing from desktop-based switching to
+window-based switching is easy.
+
+As a long-term goal, one may consider changing bringer so that it
+presents its choices via a mouse-clickable menu (e.g. based on GTK).
+
+
+Installation
+------------
+
+I may provide a binary at a later stage. For the time being, OCaml is
+needed. The line to create the executable "bringer.native" looks as
+follows.
+
+ocamlbuild -cflags -I,+extlib -libs str,unix,extlib/extLib bringer.native
+
+As we can see, the "batteries included"-library (extlib) needs to be
+on your system besides the standard installation of OCaml.
+
+Bringer uses the command-line tools "dmenu" and "wmctrl", which need
+to be installed as well.
+
+
+Why is bringer written in OCaml? 
+--------------------------------
+
+(1) I love functional programming in general
+
+(2) I love the type system of ML-type languages (also the somewhat
+similar type system of Haskell)
+
+(3) In my paid job in the .Net-world, I am considering to switch from
+C# to F#, which is a descendant of OCaml; bringer acts as a warm-up
+exercise for that.
+
+(4) I wrote the first version of bringer in bash. I soon found that I
+despise bash. So I was wondering how it would feel to use a high-level
+language to replace it. Porting bringer to OCaml served as a coding
+exercise. Result: the code got a lot nicer, reusable, and more fun to
+work with. I would never go back to bash for any program longer than a
+dozen lines. Admittedly, the OCaml code was about 20% longer than the
+bash code (counting characters). This is mostly because bash needs no
+boilerplate code to use operating-system functionality.

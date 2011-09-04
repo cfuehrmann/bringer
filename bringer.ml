@@ -2,13 +2,13 @@
 
 (* todos: *)
 
-(* zum thema unit tests:  durch die intensive eigennutzung ist viel         *)
+(* Concering unit tests:  durch die intensive eigennutzung ist viel         *)
 (* abgedeckt; was fehlt, ist (1) der test anderer systemkonfigurationen    *)
 (* (fehlendes wmctrl, dateirechte, etc., und (2) nicht ganz so             *)
 (* offensichtliche merkmale wie die sortierung der desktops und der        *)
 (* history                                                                 *)
 
-(* github + co? gtk? *)
+(* emply gtk instead of dmenu? *)
 
 (* description_of_window über eine Datei mit Kommando-Namen                *)
 (* implementieren. Nur: "Was ist die Regel, und was ist die Ausnahme?"     *)
