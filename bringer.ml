@@ -2,7 +2,7 @@
 
 (* todos: *)
 
-(* zum thema unit tests: durch die intensive eigennutzung ist viel         *)
+(* zum thema unit tests:  durch die intensive eigennutzung ist viel         *)
 (* abgedeckt; was fehlt, ist (1) der test anderer systemkonfigurationen    *)
 (* (fehlendes wmctrl, dateirechte, etc., und (2) nicht ganz so             *)
 (* offensichtliche merkmale wie die sortierung der desktops und der        *)
