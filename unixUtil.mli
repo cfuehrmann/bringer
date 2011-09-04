@@ -1,4 +1,4 @@
-val with_command_in : string -> (in_channel -> 'a) -> 'a
+val with_command_in : (in_channel -> 'a) -> string -> 'a
 val command : int -> string
 val home : unit -> string
 val date : string -> string
