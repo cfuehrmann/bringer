@@ -17,7 +17,7 @@ let windows_per_desktop () =
 		let rec loop () =
 			Scanf.fscanf ic "%i %i %i %s %s@\n"
 				(fun window desktop pid host title ->
-							Hashtbl.add result desktop (window, command pid, host, title));
+							Hashtbl.add result desktop (window, command_of pid, host, title));
 			loop () in
 		loop () in
 	try

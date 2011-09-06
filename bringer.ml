@@ -62,8 +62,7 @@ let _ =
 				output_string oc desktop_lines;
 				output_string oc history_lines;
 				output_string oc ("\n" ^ String.make 80 '-' );
-				begin
-					let ic = Unix.open_process_in "dmenu_path" in
+				(let ic = Unix.open_process_in "dmenu_path" in
 					try
 						while true do
 							let line = input_line ic in
@@ -76,8 +75,7 @@ let _ =
 							()
 					| e ->
 							let _ = Unix.close_process_in ic in
-							raise e
-				end;
+							raise e);
 				close_out oc;
 				let input = input_line ic
 				and _ = Unix.close_process (ic, oc) in

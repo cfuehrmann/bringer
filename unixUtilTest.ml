@@ -12,7 +12,7 @@ let max_pid () =
 	with_file_in f "/proc/sys/kernel/pid_max"
 
 let pid_not_found () =
-	assert_raises Not_found (fun () -> UnixUtil.command (max_pid () + 1))
+	assert_raises Not_found (fun () -> UnixUtil.command_of (max_pid () + 1))
 
 let suite =
 	"suite" >:::

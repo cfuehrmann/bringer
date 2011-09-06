@@ -9,7 +9,7 @@ let with_command_in f command =
 			let _ = Unix.close_process_in ic in
 			raise e
 
-let command pid =
+let command_of pid =
 	let c = Printf.sprintf "ps -p %d -o command=" pid
 	and f ic =
 		let line = input_line ic in
