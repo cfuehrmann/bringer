@@ -9,13 +9,10 @@ open SysUtil
 let history_file = home () ^ "/" ^ ".bringerHistory"
 
 let description_of_window (windowId, command, host, title) =
-	if Str.string_match (Str.regexp "^\\([^ ]*\\).*$") command 0 then
-		match	Str.matched_group 1 command with
-		| "urxvt" -> "urxvt: " ^ title
-		| "chrome" -> "chrome: " ^ title
-		| "java" -> "java: " ^ title
-		| "python2.7" -> "python2.7: " ^ title
-		| _ -> command
+	if Str.string_match (Str.regexp "^\\([^ ]*\\)\\(.*\\)$") command 0 then
+		let c = Str.matched_group 1 command
+		and args = String.strip (Str.matched_group 2 command) in
+		Config.description_of_window windowId c args host title
 	else command
 
 let desktop_lines =
@@ -28,8 +25,7 @@ let desktop_lines =
 	List.fold_left f "" (desktop_list ())
 
 let history_list =
-	let l =
-		list_from_hashtbl (line_frequencies history_file) in
+	let l = list_from_hashtbl (line_frequencies history_file) in
 	let compare (c1, (f1, mr1)) (c2, (f2, mr2)) =
 		let n = compare f2 f1 in
 		if n = 0 then compare mr1 mr2 else n in
@@ -85,15 +81,13 @@ let _ =
 					let _ = Unix.close_process (ic, oc) in
 					raise e in
 		if Str.string_match (Str.regexp "^[^0-9]*\\([0-9]+\\).*") user_input 0 then
-			let _ =
-				Sys.command ("wmctrl -s" ^ (Str.matched_group 1 user_input)) in
+			let _ = Sys.command ("wmctrl -s" ^ (Str.matched_group 1 user_input)) in
 			()
 		else if Str.string_match (Str.regexp "^-*$") user_input 0 then ()
 		else
 			let command =
 				let r = Str.regexp "^\\(.*\\)[ ]\\*\\*\\*\\*\\**.*$" in
-				if Str.string_match r user_input 0 then
-					Str.matched_group 1 user_input
+				if Str.string_match r user_input 0 then Str.matched_group 1 user_input
 				else user_input in
 			exec_with_history command
 	with
