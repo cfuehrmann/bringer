@@ -47,7 +47,7 @@ follows a wide separator of the form "---...---". Below that follow
 the commands from the path.
 
 For details about searching and picking entries, see the manual of
-dmenu.
+Dmenu.
 
 
 Requirements
@@ -55,7 +55,7 @@ Requirements
 
 * Linux
 
-* The command-line tools "dmenu"
+* The command-line tool "Dmenu"
 
 * The command-line tool "wmctrl"
 
@@ -83,10 +83,7 @@ bringer.byte
 The executable you need to make a keyboard shortcut for is then
 "bringer.native" or "bringer.byte", respectively.
 
-Remark: the "extlib" stands for the above-mentioned "Batteries" As we
-can see, the "batteries included"-library (extlib) needs to be on your
-system besides the standard installation of O
-Caml.
+Remark: the "extlib" stands for the above-mentioned "Batteries".
 
 
 Configuration
@@ -115,10 +112,10 @@ display the window title instead.
 Original motivation
 ------------------- 
 
-When using Linux, I use the Xmonad window manager. By default, xmonad
-offers dmenu and gmrun for launching programs. In my setup, I used to
-add a panel/taskbar (tint2) to see which applications are running and
-to switch between desktops. Dmenu is very slick but has no command
+When using Linux, I use the Xmonad window manager. By default, Xmonad
+offers Dmenu and Gmrun for launching programs. In my setup, I used to
+add a panel/taskbar to see which applications are running and to
+switch between desktops. Dmenu is very slick but has no command
 history. Gmrun takes one or two more key presses, but has a command
 history, which is searchable. I wanted to deal with all those features
 (launching searchable commands, searchable command history, awareness
@@ -133,16 +130,16 @@ optimal choice for a particular action
 * In particular, when I need an application to run, I want the
 launcher to show me whether it is already running. To me this looks
 like a key feature that most launchers and desktop environments fail
-to understand. (Interestingly, the recent Gnome Shell seems to address
-precisely this issue. But strangely enough, many reviewers don't seem
-to understand that.)
+to understand. (Interestingly, the recent GnomeShell seems to address
+precisely this issue, although view reviewers seem to understand
+that.)
 
 
 Future enhancements
 -------------------
 
-As a long-term goal, one may consider changing bringer so that it
-presents its choices via a mouse-clickable menu (e.g. based on GTK).
+One may consider changing bringer so that it presents its choices via
+a mouse-clickable menu (e.g. based on GTK).
 
 
 Why is bringer written in OCaml? 
