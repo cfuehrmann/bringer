@@ -85,7 +85,8 @@ The executable you need to make a keyboard shortcut for is then
 
 Remark: the "extlib" stands for the above-mentioned "Batteries" As we
 can see, the "batteries included"-library (extlib) needs to be on your
-system besides the standard installation of OCaml.
+system besides the standard installation of O
+Caml.
 
 
 Configuration
@@ -138,7 +139,7 @@ to understand that.)
 
 
 Future enhancements
-...................
+-------------------
 
 As a long-term goal, one may consider changing bringer so that it
 presents its choices via a mouse-clickable menu (e.g. based on GTK).
