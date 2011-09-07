@@ -57,7 +57,7 @@ Requirements
 
 * The command-line tool "Dmenu"
 
-* The command-line tool "wmctrl"
+* The command-line tool "Wmctrl"
 
 * An OCaml compiler, in particular ocamlbuild (don't be afraid though,
   it's really simple)
@@ -72,13 +72,12 @@ Installation
 
 In the root directory of the project, execute
 
-ocamlbuild -cflags -I,+extlib -libs str,unix,extlib/extLib bringer.native
+    ocamlbuild -cflags -I,+extlib -libs str,unix,extlib/extLib bringer.native
 
 Or, in the unlikely case where you have no native compiler for your
 platform, execute
 
-ocamlbuild -cflags -I,+extlib -libs str,unix,extlib/extLib
-bringer.byte
+    ocamlbuild -cflags -I,+extlib -libs str,unix,extlib/extLib bringer.byte
 
 The executable you need to make a keyboard shortcut for is then
 "bringer.native" or "bringer.byte", respectively.
@@ -131,7 +130,7 @@ optimal choice for a particular action
 launcher to show me whether it is already running. To me this looks
 like a key feature that most launchers and desktop environments fail
 to understand. (Interestingly, the recent GnomeShell seems to address
-precisely this issue, although view reviewers seem to understand
+precisely this issue, although many reviewers seem to understand
 that.)
 
 
@@ -139,7 +138,8 @@ Future enhancements
 -------------------
 
 One may consider changing bringer so that it presents its choices via
-a mouse-clickable menu (e.g. based on GTK).
+a mouse-clickable menu. (One could for example use GTK, or switch to
+try to switch to F#/Mono).
 
 
 Why is bringer written in OCaml? 
@@ -161,7 +161,7 @@ heavy-weight for my liking, in particular for a small project.
 
 * I wrote the first version of bringer in Bash, which I soon despised.
 So I wondered how it would feel to use a high-level language
-instead. Porting bringer to OCaml served was my test. The result was
+instead. Porting bringer to OCaml served as my test. The result was
 that the code got a lot nicer, reusable, and more fun to work with. I
 would never go back to Bash for any program longer than a dozen
 lines. Admittedly, the OCaml code was about 20% longer than the Bash
