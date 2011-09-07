@@ -46,9 +46,18 @@ let exec_with_history command =
 	if pid = 0 then
 		let _ = Unix.execvp "sh" [| command; "-c"; ("exec " ^ command) |] in
 		exit (-1)
-	else insert_at_beginning history_file command
+	else
+		let tmp = history_file ^ ".tmp" in
+		with_file_out tmp (prepend command history_file);
+		Sys.rename tmp history_file
 
 let _ = touch 0o600 history_file
+
+let delete_from_history line =
+	let tmp = home () ^ "/" ^ ".bringerHistory.tmp" in
+	with_file_out tmp (fun oc ->
+					filter_file history_file oc (fun l -> l <> line));
+	Sys.rename tmp history_file
 
 let _ =
 	try
@@ -80,7 +89,10 @@ let _ =
 			| e ->
 					let _ = Unix.close_process (ic, oc) in
 					raise e in
-		if Str.string_match (Str.regexp "^[^0-9]*\\([0-9]+\\).*") user_input 0 then
+		if Str.string_match (Str.regexp "^\\(.*\\)!d") user_input 0 then
+			let line = Str.matched_group 1 user_input in
+			delete_from_history line
+		else if Str.string_match (Str.regexp "^[^0-9]*\\([0-9]+\\).*") user_input 0 then
 			let _ = Sys.command ("wmctrl -s" ^ (Str.matched_group 1 user_input)) in
 			()
 		else if Str.string_match (Str.regexp "^-*$") user_input 0 then ()

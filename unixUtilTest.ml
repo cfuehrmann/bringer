@@ -3,13 +3,12 @@ open UnixUtil
 open SysUtil
 
 let max_pid () =
-	let f ic =
-		Scanf.fscanf ic "%d"
-			(fun pid ->
-						let result = pid in
-						close_in ic;
-						result) in
-	with_file_in f "/proc/sys/kernel/pid_max"
+	with_file_in "/proc/sys/kernel/pid_max" (fun ic ->
+					Scanf.fscanf ic "%d"
+						(fun pid ->
+									let result = pid in
+									close_in ic;
+									result))
 
 let pid_not_found () =
 	assert_raises Not_found (fun () -> UnixUtil.command_of (max_pid () + 1))
