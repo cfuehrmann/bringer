@@ -17,7 +17,7 @@ let command_of pid =
 	try
 		with_command_in f c
 	with
-	| End_of_file -> raise Not_found
+	| End_of_file -> "--unknown--"
 
 let home () = with_command_in input_line "echo ~"
 
