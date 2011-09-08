@@ -92,8 +92,8 @@ let _ =
 		if Str.string_match (Str.regexp "^\\(.*\\)!d") user_input 0 then
 			let line = Str.matched_group 1 user_input in
 			delete_from_history line
-		else if Str.string_match (Str.regexp "^[^0-9]*\\([0-9]+\\).*") user_input 0 then
-			let _ = Sys.command ("wmctrl -s" ^ (Str.matched_group 1 user_input)) in
+		else if Str.string_match (Str.regexp "^\\( \\|\\*\\)\\([0-9]+\\) .*") user_input 0 then
+			let _ = Sys.command ("wmctrl -s" ^ (Str.matched_group 2 user_input)) in
 			()
 		else if Str.string_match (Str.regexp "^-*$") user_input 0 then ()
 		else
