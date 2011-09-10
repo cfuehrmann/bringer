@@ -162,7 +162,7 @@ that.)
 Future enhancements
 -------------------
 
-See the items labelled "Feature" in the github issue tracker.
+See the items labeled "Feature" in the github issue tracker.
 
 
 Why is bringer written in OCaml? 
