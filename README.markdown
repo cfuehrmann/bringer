@@ -23,7 +23,7 @@ search or arrow keys.
 
 Bringer is optimized for tiling window managers, because the switching
 is between desktops, not between windows. Still, it may also be useful
-for "normal" (i.e. stacking) window managers.
+for "normal" (i.e. stacking or compositing) window managers.
 
 The order of the desktops is based on the windows they contain, not on
 the desktops' integer numbers. This is to keep the ordering
@@ -59,6 +59,10 @@ Requirements
 
 * The command-line tool "Wmctrl"
 
+* A window manager that works with Wmctrl, see
+  [here](http://tomas.styblo.name/wmctrl/). Instructions for Xmonad are 
+  given further below.
+
 * An OCaml compiler, in particular ocamlbuild (don't be afraid though,
   it's really simple)
 
@@ -84,6 +88,14 @@ The executable you need to make a keyboard shortcut for is then
 
 Remark: the "extlib" stands for the above-mentioned "Batteries".
 
+If you use Xmonad, it must be made EWMH-compatible by using
+
+    import XMonad.Hooks.EwmhDesktops
+
+in your "xmonad.hs" and enabling it for example as follows:
+
+    main = do
+        xmonad $ ewmh defaultConfig { ...
 
 Configuration
 -------------
