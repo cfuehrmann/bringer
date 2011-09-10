@@ -50,6 +50,19 @@ For details about searching and picking entries, see the manual of
 Dmenu.
 
 
+More features
+-------------
+
+* Entries from the command history can be deleted: invoke bringer and
+select the unwanted history entry with the TAB key. Append the two
+characters !d to it, and press ENTER. This deletes all occurrences
+from the history file. (The ! character means that that the user wants
+to apply a command to the selected line, and the d character stands
+for "delete".)
+
+* More !-commands to come
+
+
 Requirements
 ------------
 
