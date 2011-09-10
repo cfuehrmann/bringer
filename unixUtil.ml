@@ -23,6 +23,7 @@ let home () = with_command_in input_line "echo ~"
 
 let date format = with_command_in input_line ("date " ^ format)
 
-let touch mod_mask file_name =
-    let fd = Unix.openfile file_name [ Unix.O_CREAT ] mod_mask in
+let touch mod_mask path =
+    let fd = Unix.openfile path [ Unix.O_CREAT ] mod_mask in
     Unix.close fd
+

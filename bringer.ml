@@ -8,6 +8,8 @@ open SysUtil
 
 let history_file = home () ^ "/" ^ ".bringerHistory"
 
+let _ = touch 0o600 history_file
+
 let description_of_window (windowId, command, host, title) =
 	if Str.string_match (Str.regexp "^\\([^ ]*\\)\\(.*\\)$") command 0 then
 		let c = Str.matched_group 1 command
@@ -51,10 +53,8 @@ let exec_with_history command =
 		with_file_out tmp (prepend command history_file);
 		Sys.rename tmp history_file
 
-let _ = touch 0o600 history_file
-
 let delete_from_history line =
-	let tmp = home () ^ "/" ^ ".bringerHistory.tmp" in
+	let tmp = home () ^ "/" ^ history_file ^ ".tmp" in
 	with_file_out tmp (fun oc ->
 					filter_file history_file oc (fun l -> l <> line));
 	Sys.rename tmp history_file
@@ -66,7 +66,8 @@ let _ =
 			try
 				output_string oc desktop_lines;
 				output_string oc history_lines;
-				output_string oc ("\n" ^ String.make 80 '-' );
+				if history_lines <> "" then output_string oc "\n" else ();
+				output_string oc (String.make 80 '-');
 				(let ic = Unix.open_process_in "dmenu_path" in
 					try
 						while true do
