@@ -61,7 +61,7 @@ the unwanted history entry with the TAB key. Append the two characters
 !d to it, and press ENTER. This deletes all occurrences of the entry
 from the history file.
 
-* Closed an off-screen window: when bringer invoked, use the TAB key
+* Close an off-screen window: when bringer invoked, use the TAB key
 to select the desktop from which you want to delete a window. Append
 the two characters !c followed by the window's index within the
 desktop. The leftmost window has index 0. If you leave away the index,
@@ -167,9 +167,7 @@ that.)
 Future enhancements
 -------------------
 
-One may consider changing bringer so that it presents its choices via
-a mouse-clickable menu. (One could for example use GTK, or switch to
-try to switch to F#/Mono).
+See the items labeled "Feature" in the github issue tracker.
 
 
 Why is bringer written in OCaml? 
