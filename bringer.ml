@@ -40,7 +40,7 @@ let history_lines =
 			let rec loop s = function
 				| [] -> s
 				| (c, f) :: t -> loop (s ^ "\n" ^ c) t
-			and s = Printf.sprintf "%s %s %s" c "*****" (date "+'%a%e, %H:%M'") in
+			and s = Printf.sprintf "%s %s %s" c "*****" (date "+'%a %e, %H:%M'") in
 			loop s t
 
 let exec_with_history command =
@@ -54,7 +54,7 @@ let exec_with_history command =
 		Sys.rename tmp history_file
 
 let delete_from_history line =
-	let tmp = home () ^ "/" ^ history_file ^ ".tmp" in
+	let tmp = history_file ^ ".tmp" in
 	with_file_out tmp (fun oc ->
 					filter_file history_file oc (fun l -> l <> line));
 	Sys.rename tmp history_file
@@ -90,18 +90,28 @@ let _ =
 			| e ->
 					let _ = Unix.close_process (ic, oc) in
 					raise e in
+		let history_time_match = "^\\(.*\\)[ ]\\*\\*\\*\\*\\**.*" in
+		(* Delete the first history line *)
+		if Str.string_match (Str.regexp (history_time_match ^ "!d"))
+			user_input 0 then
+			let line = Str.matched_group 1 user_input in
+			delete_from_history line
+		else (* Delete another history line *)
 		if Str.string_match (Str.regexp "^\\(.*\\)!d") user_input 0 then
 			let line = Str.matched_group 1 user_input in
 			delete_from_history line
-		else if Str.string_match (Str.regexp "^\\( \\|\\*\\)\\([0-9]+\\) .*") user_input 0 then
+		else (* Switch to a desktop *)
+		if Str.string_match
+			(Str.regexp "^\\( \\|\\*\\)\\([0-9]+\\) .*") user_input 0 then
 			let _ = Sys.command ("wmctrl -s" ^ (Str.matched_group 2 user_input)) in
 			()
-		else if Str.string_match (Str.regexp "^-*$") user_input 0 then ()
-		else
-			let command =
-				let r = Str.regexp "^\\(.*\\)[ ]\\*\\*\\*\\*\\**.*$" in
-				if Str.string_match r user_input 0 then Str.matched_group 1 user_input
-				else user_input in
-			exec_with_history command
+		else (* Do nothing in case of a separator *)
+		if Str.string_match (Str.regexp "^-*$") user_input 0 then ()
+		else (* Execute as a command *)
+		let command =
+			if Str.string_match (Str.regexp history_time_match) user_input 0 then
+				Str.matched_group 1 user_input
+			else user_input in
+		exec_with_history command
 	with
 	| End_of_file -> ()
