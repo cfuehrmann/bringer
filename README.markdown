@@ -50,6 +50,24 @@ For details about searching and picking entries, see the manual of
 Dmenu.
 
 
+More features
+-------------
+
+The extra features come in the form of "suffix commands", which start
+with the character ! after the selected entry:
+ 
+* Delete an unwanted history entry: when bringer is invoked, select
+the unwanted history entry with the TAB key. Append the two characters
+!d to it, and press ENTER. This deletes all occurrences of the entry
+from the history file.
+
+* Closed an off-screen window: when bringer invoked, use the TAB key
+to select the desktop from which you want to delete a window. Append
+the two characters !c followed by the window's index within the
+desktop. The leftmost window has index 0. If you leave away the index,
+0 is assumed.
+
+
 Requirements
 ------------
 

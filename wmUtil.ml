@@ -43,7 +43,7 @@ let window_list_per_desktop () =
 	end;
 	result
 
-let desktop_list () =
+let desktop_list windows_per_desktop =
 	let compare_desktops (d1, l1) (d2, l2) =
 		let rec compare_window_lists = function
 			| [(w1, c1, h1, title1)], [(w2, c2, h2, title2)] ->
@@ -56,5 +56,5 @@ let desktop_list () =
 					let n = compare c1 c2 in
 					if n = 0 then compare_window_lists (t1, t2) else n in
 		compare_window_lists (l1, l2) in
-	List.sort compare_desktops (list_from_hashtbl (window_list_per_desktop ()))
+	List.sort compare_desktops (list_from_hashtbl windows_per_desktop)
 

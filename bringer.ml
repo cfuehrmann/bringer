@@ -17,6 +17,8 @@ let description_of_window (windowId, command, host, title) =
 		Config.description_of_window windowId c args host title
 	else command
 
+let windows_per_desktop = window_list_per_desktop ()
+
 let desktop_lines =
 	let f =
 		let cd = current_desktop () in
@@ -24,7 +26,7 @@ let desktop_lines =
 				let star = if d = cd then "*" else " "
 				and description = string_of_list description_of_window " ----- " l in
 				s ^ star ^ string_of_int d ^ " " ^ description ^ "\n" in
-	List.fold_left f "" (desktop_list ())
+	List.fold_left f "" (desktop_list windows_per_desktop)
 
 let history_list =
 	let l = list_from_hashtbl (line_frequencies history_file) in
@@ -91,21 +93,32 @@ let _ =
 					let _ = Unix.close_process (ic, oc) in
 					raise e in
 		let history_time_match = "^\\(.*\\)[ ]\\*\\*\\*\\*\\**.*" in
-		(* Delete the first history line *)
+		let desktop_match = "^\\( \\|\\*\\)\\([0-9]+\\) .*" in
+		(* Delete the first history line with !d *)
 		if Str.string_match (Str.regexp (history_time_match ^ "!d"))
 			user_input 0 then
 			let line = Str.matched_group 1 user_input in
 			delete_from_history line
-		else (* Delete another history line *)
+		else (* Delete another history line with !d *)
 		if Str.string_match (Str.regexp "^\\(.*\\)!d") user_input 0 then
 			let line = Str.matched_group 1 user_input in
 			delete_from_history line
-		else (* Switch to a desktop *)
+		else (* Close window n with !cn *)
 		if Str.string_match
-			(Str.regexp "^\\( \\|\\*\\)\\([0-9]+\\) .*") user_input 0 then
-			let _ = Sys.command ("wmctrl -s" ^ (Str.matched_group 2 user_input)) in
+			(Str.regexp (desktop_match ^ "!c\\(.*\\)")) user_input 0 then
+			let windows =
+				let desktop = int_of_string (Str.matched_group 2 user_input) in
+				Hashtbl.find windows_per_desktop desktop
+			and index =
+				let n = Str.matched_group 3 user_input in
+				if n = "" then 0 else int_of_string n in
+			let (id, _, _, _) = List.nth windows index in
+			let _ = Sys.command ("wmctrl -i -c " ^ (string_of_int id)) in
 			()
-		else (* Do nothing in case of a separator *)
+		else (* Switch to a desktop *)
+		if Str.string_match (Str.regexp desktop_match) user_input 0 then
+			let _ = Sys.command ("wmctrl -s" ^ (Str.matched_group 2 user_input)) in ()
+		else(* Do nothing in case of a separator *)
 		if Str.string_match (Str.regexp "^-*$") user_input 0 then ()
 		else (* Execute as a command *)
 		let command =
