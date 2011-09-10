@@ -162,9 +162,7 @@ that.)
 Future enhancements
 -------------------
 
-One may consider changing bringer so that it presents its choices via
-a mouse-clickable menu. (One could for example use GTK, or switch to
-try to switch to F#/Mono).
+See the items labelled "Feature" in the github issue tracker.
 
 
 Why is bringer written in OCaml? 
