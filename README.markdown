@@ -78,6 +78,9 @@ to select the desktop that contains the window you want to bring to
 the current desktop. Append !b followed by the window's index within
 its desktop. No index means 0. Press ENTER.
 
+* Push the active (i.e. focused) window away to a chosen desktop: use
+  the TAB key to select the desktop and press ENTER.
+
 
 Tips
 ----

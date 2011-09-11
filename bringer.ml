@@ -102,8 +102,8 @@ let _ =
 			if Str.string_match (Str.regexp (desktop_match ^ "!c\\(.*\\)"))
 				user_input 0 then
 				let windows =
-					let desktop = int_of_string (Str.matched_group 2 user_input) in
-					Hashtbl.find windows_per_desktop desktop
+					let desktop = Str.matched_group 2 user_input in
+					Hashtbl.find windows_per_desktop (int_of_string desktop)
 				and index =
 					let n = Str.matched_group 3 user_input in
 					if n = "" then 0 else int_of_string n in
@@ -114,17 +114,24 @@ let _ =
 			if Str.string_match
 				(Str.regexp (desktop_match ^ "!b\\(.*\\)")) user_input 0 then
 				let windows =
-					let desktop = int_of_string (Str.matched_group 2 user_input) in
-					Hashtbl.find windows_per_desktop desktop
+					let desktop = Str.matched_group 2 user_input in
+					Hashtbl.find windows_per_desktop (int_of_string desktop)
 				and index =
 					let n = Str.matched_group 3 user_input in
 					if n = "" then 0 else int_of_string n in
 				let (id, _, _, _) = List.nth windows index in
 				let _ = Unix.system ("wmctrl -i -R " ^ (string_of_int id)) in
 				()
+			else (* Push the active window to selected desktop with !pn *)
+			if Str.string_match
+				(Str.regexp (desktop_match ^ "!p")) user_input 0 then
+				let desktop = Str.matched_group 2 user_input in
+				let _ = Unix.system ("wmctrl -r :ACTIVE: -t " ^ desktop) in
+				()
 			else (* Switch to a desktop *)
 			if Str.string_match (Str.regexp desktop_match) user_input 0 then
-				let _ = Unix.system ("wmctrl -s" ^ (Str.matched_group 2 user_input)) in
+				let desktop = Str.matched_group 2 user_input in
+				let _ = Unix.system ("wmctrl -s" ^ desktop) in
 				()
 			else(* Do nothing in case of a separator *)
 			if user_input = separator then ()
