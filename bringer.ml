@@ -115,6 +115,18 @@ let _ =
 			let (id, _, _, _) = List.nth windows index in
 			let _ = Sys.command ("wmctrl -i -c " ^ (string_of_int id)) in
 			()
+		else (* Bring window n to the current desktop with !bn *)
+		if Str.string_match
+			(Str.regexp (desktop_match ^ "!b\\(.*\\)")) user_input 0 then
+			let windows =
+				let desktop = int_of_string (Str.matched_group 2 user_input) in
+				Hashtbl.find windows_per_desktop desktop
+			and index =
+				let n = Str.matched_group 3 user_input in
+				if n = "" then 0 else int_of_string n in
+			let (id, _, _, _) = List.nth windows index in
+			let _ = Sys.command ("wmctrl -i -R " ^ (string_of_int id)) in
+			()
 		else (* Switch to a desktop *)
 		if Str.string_match (Str.regexp desktop_match) user_input 0 then
 			let _ = Sys.command ("wmctrl -s" ^ (Str.matched_group 2 user_input)) in ()

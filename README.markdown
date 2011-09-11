@@ -56,16 +56,20 @@ More features
 The extra features come in the form of "suffix commands", which start
 with the character ! after the selected entry:
  
-* Delete an unwanted history entry: when bringer is invoked, select
-the unwanted history entry with the TAB key. Append the two characters
-!d to it, and press ENTER. This deletes all occurrences of the entry
-from the history file.
+* Delete an unwanted history entry: use the TAB key to select the
+unwanted history entry. Append the two characters !d to it, and press
+ENTER. This deletes all occurrences of the entry from the history
+file.
 
-* Close an off-screen window: when bringer invoked, use the TAB key
-to select the desktop from which you want to delete a window. Append
-the two characters !c followed by the window's index within the
-desktop. The leftmost window has index 0. If you leave away the index,
-0 is assumed.
+* Close an off-screen window: use the TAB key to select the desktop
+from which you want to delete a window. Append !c followed by the
+window's index within its desktop. The leftmost window has index 0. No
+index means 0. Press ENTER.
+
+* Bring an off-screen window to the current desktop: use the TAB key
+to select the desktop that contains the window you want to bring to
+the current desktop. Append !b followed by the window's index within
+its desktop. No index means 0. Press ENTER.
 
 
 Tips
@@ -154,8 +158,8 @@ Original motivation
 
 When using Linux, I use the xmonad window manager. By default, xmonad
 offers dmenu and Gmrun for launching programs. In my setup, I used to
-add a task bar to see which applications are running and to
-switch between desktops. Dmenu is very slick but has no command
+add a task bar to see which applications are running and to switch
+between desktops. Dmenu is very slick but has no command
 history. Gmrun takes one or two more key presses, but has a command
 history, which is searchable. I wanted to deal with all those features
 (launching searchable commands, searchable command history, awareness
@@ -171,8 +175,7 @@ optimal choice for a particular action
 launcher to show me whether it is already running. To me this looks
 like a key feature that most launchers and desktop environments fail
 to understand. (Interestingly, the recent GnomeShell seems to address
-precisely this issue, although many reviewers seem to understand
-that.)
+precisely this issue, although few reviewers seem to understand that.)
 
 
 Future enhancements
