@@ -1,7 +1,7 @@
 Overview
 --------
 
-Bringer is a utility that acts as a program laucher and desktop
+Bringer is a utility that acts as a program launcher and desktop
 switcher for Linux. It occupies no screen space and only appears when
 it is invoked (typically by a keyboard shortcut of the window manager
 or desktop environment). While its appearance is simple, its features
@@ -47,7 +47,7 @@ follows a wide separator of the form "---...---". Below that follow
 the commands from the path.
 
 For details about searching and picking entries, see the manual of
-Dmenu.
+dmenu.
 
 
 More features
@@ -68,24 +68,34 @@ desktop. The leftmost window has index 0. If you leave away the index,
 0 is assumed.
 
 
+Tips
+----
+
+* When choosing a keyboard shortcut for bringer, it is worth noting
+that RETURN and the arrow keys tend to be bringer's most frequently
+used keys: RETURN for invoking a choice, and the arrow keys for
+selecting a choice. So it is convenient to have the shortcut for
+bringer in the same keyboard region. CTRL + RETURN works very well.
+
+
 Requirements
 ------------
 
 * Linux
 
-* The command-line tool "Dmenu"
+* The command-line tool "dmenu"
 
-* The command-line tool "Wmctrl"
+* The command-line tool "wmctrl"
 
-* A window manager that works with Wmctrl, see
-  [here](http://tomas.styblo.name/wmctrl/). Instructions for Xmonad are 
+* A window manager that works with wmctrl, see
+  [here](http://tomas.styblo.name/wmctrl/). Instructions for xmonad are 
   given further below.
 
 * An OCaml compiler, in particular ocamlbuild (don't be afraid though,
   it's really simple)
 
-* "OCaml Batteries included" (short: "Batteries"), a widely-availabe
-  library for OCaml (it comes as a package with some distros - I
+* "OCaml Batteries included" (short: "Batteries"), a widely-available
+  library for OCaml (it comes as a package with some distributions - I
   checked for Ubuntu and Gentoo, which I use myself)
 
 
@@ -106,14 +116,15 @@ The executable you need to make a keyboard shortcut for is then
 
 Remark: the "extlib" stands for the above-mentioned "Batteries".
 
-If you use Xmonad, it must be made EWMH-compatible by using
+If you use xmonad, it must be made EWMH-compatible by using
 
-    import XMonad.Hooks.EwmhDesktops
+    import Xmonad.Hooks.EwmhDesktops
 
 in your "xmonad.hs" and enabling it for example as follows:
 
     main = do
         xmonad $ ewmh defaultConfig { ...
+
 
 Configuration
 -------------
@@ -122,7 +133,7 @@ Bringer is configured by editing the file "config.ml" and recompiling
 (as described in the installation section). While the configuration
 file is written in OCaml, it is so simple and self-explanatory that it
 can be edited without knowledge of the language.  (Thus we follow the
-approach of the window manager Xmonad, which is written in Haskell,
+approach of the window manager xmonad, which is written in Haskell,
 just like its configuration file.)
 
 Currently, the only aspect that can be configured is the formatting of
@@ -141,9 +152,9 @@ display the window title instead.
 Original motivation
 ------------------- 
 
-When using Linux, I use the Xmonad window manager. By default, Xmonad
-offers Dmenu and Gmrun for launching programs. In my setup, I used to
-add a panel/taskbar to see which applications are running and to
+When using Linux, I use the xmonad window manager. By default, xmonad
+offers dmenu and Gmrun for launching programs. In my setup, I used to
+add a task bar to see which applications are running and to
 switch between desktops. Dmenu is very slick but has no command
 history. Gmrun takes one or two more key presses, but has a command
 history, which is searchable. I wanted to deal with all those features
@@ -167,7 +178,7 @@ that.)
 Future enhancements
 -------------------
 
-See the items labeled "Feature" in the github issue tracker.
+See the items labeled "Feature" in the GitHub issue tracker.
 
 
 Why is bringer written in OCaml? 
