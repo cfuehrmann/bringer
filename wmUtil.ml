@@ -9,7 +9,7 @@ let current_desktop () =
 				(fun desktop marker rest ->
 							if marker = "*" then desktop else loop ()) in
 		loop () in
-	with_command_in f "wmctrl -d"
+	with_command_in "wmctrl -d" f
 
 let windows_per_desktop () =
 	let result = Hashtbl.create 5 in
@@ -21,7 +21,7 @@ let windows_per_desktop () =
 			loop () in
 		loop () in
 	try
-		with_command_in f "wmctrl -lp"
+		with_command_in "wmctrl -lp" f
 	with
 	| End_of_file -> result
 

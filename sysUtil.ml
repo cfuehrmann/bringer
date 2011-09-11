@@ -58,7 +58,7 @@ let filter_channel ic oc p =
 	try
 		while true do
 			let l = input_line ic in
-			if p l then output_string oc (l ^ "\n") else ()
+			if p l then output_string oc (l ^ "\n")
 		done
 	with
 	| End_of_file -> ()

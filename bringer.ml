@@ -57,60 +57,50 @@ let delete_from_history line =
 					filter_file history_file oc (fun l -> l <> line));
 	Sys.rename tmp history_file
 
+let history_time_match = "^\\(.*\\)[ ]\\*\\*\\*\\*\\**.*"
+let desktop_match = "^\\( \\|\\*\\)\\([0-9]+\\) .*"
+let separator = String.make 80 '-'
+
 let _ =
 	try
 		let rec loop () =
-			let _ = touch 0o600 history_file in
-			let history_list = history_list history_file in
-			let history_lines = history_lines history_list in
-			let windows_per_desktop = window_list_per_desktop () in
-			let desktop_lines = desktop_lines (desktop_list windows_per_desktop) in
-			print_endline desktop_lines;
-			print_endline "";
+			touch 0o600 history_file;
+			let history_list = history_list history_file
+			and windows_per_desktop = window_list_per_desktop () in
+			let desktop_list = desktop_list windows_per_desktop in
 			let user_input =
-				let ic, oc = Unix.open_process "dmenu -i -l 13" in
-				try
-					output_string oc desktop_lines;
-					output_string oc history_lines;
-					if history_lines <> "" then output_string oc "\n" else ();
-					output_string oc (String.make 80 '-');
-					(let ic = Unix.open_process_in "dmenu_path" in
-						try
-							while true do
-								let line = input_line ic in
-								let is_in_history = List.mem line (List.map fst history_list) in
-								if is_in_history then () else output_string oc ("\n" ^ line)
-							done
-						with
-						| End_of_file ->
-								let _ = Unix.close_process_in ic in
-								()
-						| e ->
-								let _ = Unix.close_process_in ic in
-								raise e);
-					close_out oc;
-					let input = input_line ic
-					and _ = Unix.close_process (ic, oc) in
-					input
-				with
-				| e ->
-						let _ = Unix.close_process (ic, oc) in
-						raise e in
-			let history_time_match = "^\\(.*\\)[ ]\\*\\*\\*\\*\\**.*" in
-			let desktop_match = "^\\( \\|\\*\\)\\([0-9]+\\) .*" in
+				with_command "dmenu -i -l 13" (fun (ic, oc) ->
+								output_string oc (desktop_lines desktop_list);
+								let l = history_lines history_list in
+								output_string oc l;
+								if l <> "" then output_string oc "\n";
+								output_string oc separator;
+								(with_command_in "dmenu_path" (fun ic ->
+													try
+														while true do
+															let l = input_line ic in
+															let is_in_history =
+																List.mem l (List.map fst history_list) in
+															if not is_in_history then
+																output_string oc ("\n" ^ l)
+														done
+													with
+													| End_of_file -> ()));
+								close_out oc;
+								input_line ic) in
 			(* Delete the first history line with !d *)
 			if Str.string_match (Str.regexp (history_time_match ^ "!d"))
 				user_input 0 then
-				let line = Str.matched_group 1 user_input in
-				delete_from_history line
+				let l = Str.matched_group 1 user_input in
+				delete_from_history l
 			else (* Delete another history line with !d *)
 			if Str.string_match (Str.regexp "^\\(.*\\)!d") user_input 0 then
-				let line = Str.matched_group 1 user_input in
-				delete_from_history line;
+				let l = Str.matched_group 1 user_input in
+				delete_from_history l;
 				loop ()
 			else (* Close window n with !cn *)
-			if Str.string_match
-				(Str.regexp (desktop_match ^ "!c\\(.*\\)")) user_input 0 then
+			if Str.string_match (Str.regexp (desktop_match ^ "!c\\(.*\\)"))
+				user_input 0 then
 				let windows =
 					let desktop = int_of_string (Str.matched_group 2 user_input) in
 					Hashtbl.find windows_per_desktop desktop
@@ -137,7 +127,7 @@ let _ =
 				let _ = Unix.system ("wmctrl -s" ^ (Str.matched_group 2 user_input)) in
 				()
 			else(* Do nothing in case of a separator *)
-			if Str.string_match (Str.regexp "^-*$") user_input 0 then ()
+			if user_input = separator then ()
 			else (* Execute as a command *)
 			let command =
 				if Str.string_match (Str.regexp history_time_match) user_input 0 then
@@ -146,4 +136,4 @@ let _ =
 			exec_with_history command in
 		loop ()
 	with
-	| End_of_file -> ()
+	| End_of_file -> () (* In case the user presses ESC *)
