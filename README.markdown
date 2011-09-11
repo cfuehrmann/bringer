@@ -59,12 +59,19 @@ with the character ! after the selected entry:
 * Delete an unwanted history entry: use the TAB key to select the
 unwanted history entry. Append the two characters !d to it, and press
 ENTER. This deletes all occurrences of the entry from the history
-file.
+file. This command *loops*, that is, bringer is invoked again after
+deleting a history line. The rationale for looping is this: normally,
+one invokes bringer to switch between desktops or launch. While doing
+so, one sometimes realizes that the history is cluttered with unwanted
+entries. One wants to delete those entries as one goes along, but keep
+the focus on the original action. To help with this, the !d command
+loops.
 
 * Close an off-screen window: use the TAB key to select the desktop
 from which you want to delete a window. Append !c followed by the
 window's index within its desktop. The leftmost window has index 0. No
-index means 0. Press ENTER.
+index means 0. Press ENTER. This command loops for the same reason as
+the !d command.
 
 * Bring an off-screen window to the current desktop: use the TAB key
 to select the desktop that contains the window you want to bring to
@@ -166,7 +173,7 @@ history, which is searchable. I wanted to deal with all those features
 of running applications and desktop switching) in such a way that the
 following conditions are met:
 
-* There should be only **one** utility, so that there is always one
+* There should be only *one* utility, so that there is always one
 optimal choice for a particular action
 
 * No screen space should be used until the utility is invoked
@@ -187,7 +194,7 @@ See the items labeled "Feature" in the GitHub issue tracker.
 Why is bringer written in OCaml? 
 --------------------------------
 
-* First-class functions are a must for me, otherwise I feel like
+* First-class functions are a must for me, without them I feel like
   walking on one leg
 
 * The type system of ML-type languages is very powerful and safe, and
@@ -196,7 +203,7 @@ inference.
 
 * So far, the same is true for Haskell. However, in my paid job in the
 .Net-world, I am considering to switch from C# to F#, which is a
-descendant of OCaml, so I get synergies from using the latter.
+descendant of OCaml, so I get a boost from using the latter.
 
 * That might still leave F# on Mono. But referencing Mono is too
 heavy-weight for my liking, in particular for a small project.
