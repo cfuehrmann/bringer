@@ -54,7 +54,8 @@ let exec_with_history command =
 let delete_from_history line =
 	let tmp = history_file ^ ".tmp" in
 	with_file_out tmp (fun oc ->
-					filter_file history_file oc (fun l -> l <> line));
+					let filter l = String.strip l <> String.strip line in
+					filter_file history_file oc filter);
 	Sys.rename tmp history_file
 
 let history_time_match = "^\\(.*\\)[ ]\\*\\*\\*\\*\\**.*"
