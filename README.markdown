@@ -108,9 +108,7 @@ Requirements
 * An OCaml compiler, in particular ocamlbuild (don't be afraid though,
   it's really simple)
 
-* "OCaml Batteries included" (short: "Batteries"), a widely-available
-  library for OCaml (it comes as a package with some distributions - I
-  checked for Ubuntu and Gentoo, which I use myself)
+* The OCaml library "ocaml-extlib"
 
 
 Installation
@@ -132,7 +130,7 @@ Remark: the "extlib" stands for the above-mentioned "Batteries".
 
 If you use xmonad, it must be made EWMH-compatible by using
 
-    import Xmonad.Hooks.EwmhDesktops
+    import XMonad.Hooks.EwmhDesktops
 
 in your "xmonad.hs" and enabling it for example as follows:
 
