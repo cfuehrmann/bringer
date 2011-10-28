@@ -130,7 +130,7 @@ Remark: the "extlib" stands for the above-mentioned "Batteries".
 
 If you use xmonad, it must be made EWMH-compatible by using
 
-    import Xmonad.Hooks.EwmhDesktops
+    import XMonad.Hooks.EwmhDesktops
 
 in your "xmonad.hs" and enabling it for example as follows:
 
