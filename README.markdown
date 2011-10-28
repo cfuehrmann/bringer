@@ -108,9 +108,7 @@ Requirements
 * An OCaml compiler, in particular ocamlbuild (don't be afraid though,
   it's really simple)
 
-* "OCaml Batteries included" (short: "Batteries"), a widely-available
-  library for OCaml (it comes as a package with some distributions - I
-  checked for Ubuntu and Gentoo, which I use myself)
+* The OCaml library "ocaml-extlib"
 
 
 Installation
