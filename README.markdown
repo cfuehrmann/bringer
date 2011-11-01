@@ -79,7 +79,7 @@ the current desktop. Append !b followed by the window's index within
 its desktop. No index means 0. Press ENTER.
 
 * Push the active (i.e. focused) window away to a chosen desktop: use
-  the TAB key to select the desktop and press ENTER.
+  the TAB key to select the desktop. Append !p and press ENTER.
 
 
 Tips
