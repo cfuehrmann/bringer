@@ -117,17 +117,15 @@ Installation
 
 In the root directory of the project, execute
 
-    ocamlbuild -cflags -I,+extlib -libs str,unix,extlib/extLib bringer.native
+    ocamlbuild -cflags -I,+extlib,-I,+threads -libs str,unix,threads/threads,extlib/extLib bringer.native
 
 Or, in the unlikely case where you have no native compiler for your
 platform, execute
 
-    ocamlbuild -cflags -I,+extlib -libs str,unix,extlib/extLib bringer.byte
+    ocamlbuild -cflags -I,+extlib,-I,+threads -libs str,unix,threads/threads,extlib/extLib bringer.byte
 
 The executable you need to make a keyboard shortcut for is then
 "bringer.native" or "bringer.byte", respectively.
-
-Remark: the "extlib" stands for the above-mentioned "Batteries".
 
 If you use xmonad, it must be made EWMH-compatible by using
 
