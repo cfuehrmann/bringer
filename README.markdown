@@ -71,7 +71,8 @@ loops.
 from which you want to delete a window. Append !c followed by the
 window's index within its desktop. The leftmost window has index 0. No
 index means 0. Press ENTER. This command loops for the same reason as
-the !d command.
+the !d command. Before looping, it waits for up to 2 seconds to give the
+system time to update the list of windows.
 
 * Bring an off-screen window to the current desktop: use the TAB key
 to select the desktop that contains the window you want to bring to

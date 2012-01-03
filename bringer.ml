@@ -68,10 +68,11 @@ let _ =
 			touch 0o600 history_file;
 			let history_list = history_list history_file
 			and windows_per_desktop = window_list_per_desktop () in
-			let desktop_list = desktop_list windows_per_desktop in
+			let the_desktop_list = desktop_list windows_per_desktop in
+			let the_desktop_lines = desktop_lines the_desktop_list in
 			let user_input =
 				with_command "dmenu -i -l 13" (fun (ic, oc) ->
-								output_string oc (desktop_lines desktop_list);
+								output_string oc the_desktop_lines;
 								let l = history_lines history_list in
 								output_string oc l;
 								if l <> "" then output_string oc "\n";
@@ -110,7 +111,17 @@ let _ =
 					if n = "" then 0 else int_of_string n in
 				let (id, _, _, _) = List.nth windows index in
 				let _ = Unix.system ("wmctrl -i -c " ^ (string_of_int id)) in
-				loop ()
+				(* Wait for up to 2 seconds until the window list changes *)
+				let rec wait n =
+					if n = 0 then loop () else begin
+						Thread.delay 0.2;
+						let windows_per_desktop_new = window_list_per_desktop () in
+						let desktop_list_new = desktop_list windows_per_desktop_new in
+						let desktop_lines_new = desktop_lines desktop_list_new in
+						if the_desktop_lines = desktop_lines_new then wait (n - 1) else
+							loop ()
+					end in
+				wait 10
 			else (* Bring window n to the current desktop with !bn *)
 			if Str.string_match
 				(Str.regexp (desktop_match ^ "!b\\(.*\\)")) user_input 0 then
