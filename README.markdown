@@ -98,7 +98,8 @@ Requirements
 
 * Linux
 
-* The command-line tool "dmenu"
+* The command "dmenu_path" from dmenu version < 4.4, or the tool lsx from 
+the suckless group
 
 * The command-line tool "wmctrl"
 
@@ -126,6 +127,16 @@ platform, execute
 
 The executable you need to make a keyboard shortcut for is then
 "bringer.native" or "bringer.byte", respectively.
+
+Bringer used to use the command "dmenu_path" from the tool dmenu from the
+suckless group. Since dmenu version 4.4, that command is no longer included. 
+If you have dmenu version > 4.4 or no dmenu, you need add to your path the 
+script "dmenu_path" that comes with bringer. The bringer version of "dmenu_path"
+requires the tool lsx from the suckless group. Alas, there is a version of the 
+lsx package where the actual command is called "lsx",
+and another one where the command is called "lsx-suckless". So you may have to
+correct the respective command inside the dmenu_path script, or create an
+appropriate symlink.
 
 If you use xmonad, it must be made EWMH-compatible by using
 
